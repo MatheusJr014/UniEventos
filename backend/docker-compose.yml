@@ -6,7 +6,7 @@ services:
     container_name: event_db
     restart: always
     environment:
-      POSTGRES_DB: eventapp
+      POSTGRES_DB: conectaeventos
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
     ports:
