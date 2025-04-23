@@ -6,7 +6,7 @@
           <nav class="navbar navbar-expand-lg navbar-light py-2">
             <div class="container-fluid">
               <a class="navbar-brand d-flex align-items-center" href="#">
-                <img src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/LogoConecta-SNoUxrSWP8iTB6IvwaQcweuJEgUJxa.png" alt="Conecta Eventos Logo" height="40" class="me-2">
+                <img src="../assets/logoConecta.png" alt="Conecta Eventos Logo" height="40" class="me-2">
               </a>
               <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
                 <span class="navbar-toggler-icon"></span>
@@ -257,7 +257,7 @@
           <div class="row g-4">
             <div class="col-lg-3 col-md-6">
               <div class="mb-4">
-                <img src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/LogoConecta-SNoUxrSWP8iTB6IvwaQcweuJEgUJxa.png" alt="Conecta Eventos Logo" height="40" class="mb-3">
+                <img src="../assets/logoConecta.png" alt="Conecta Eventos Logo" height="40" class="mb-3">
                 <p class="text-muted small">
                   A melhor plataforma para encontrar e promover eventos no Brasil.
                 </p>

@@ -1,33 +1,27 @@
-import { Sequelize } from 'sequelize';
-import dotenv from 'dotenv';
-import UserModel from './user.js';
-import EventModel from './event.js';
-import RegistrationModel from './registration.js';
-
-dotenv.config();
+const { Sequelize } = require('sequelize');
 
 const sequelize = new Sequelize(
-  process.env.DB_NAME,
-  process.env.DB_USER,
-  process.env.DB_PASSWORD,
+  process.env.DB_NAME || 'eventdb',
+  process.env.DB_USER || 'user',
+  process.env.DB_PASS || 'password',
   {
-    host: process.env.DB_HOST,
-    dialect: 'postgres'
+    host: process.env.DB_HOST || 'localhost',
+    port: process.env.DB_PORT || 5432,
+    dialect: 'postgres',
+    logging: false
   }
 );
 
-const db = {};
-db.Sequelize = Sequelize;
-db.sequelize = sequelize;
+const Usuario = require('./usuario')(sequelize);
+const Evento = require('./evento')(sequelize);
+const Ingresso = require('./ingresso')(sequelize);
 
-db.User = UserModel(sequelize);
-db.Event = EventModel(sequelize);
-db.Registration = RegistrationModel(sequelize);
+Usuario.belongsToMany(Evento, { through: Ingresso });
+Evento.belongsToMany(Usuario, { through: Ingresso });
 
-db.User.hasMany(db.Event);
-db.Event.belongsTo(db.User);
+Ingresso.belongsTo(Usuario);
+Ingresso.belongsTo(Evento);
+Usuario.hasMany(Ingresso);
+Evento.hasMany(Ingresso);
 
-db.User.belongsToMany(db.Event, { through: db.Registration });
-db.Event.belongsToMany(db.User, { through: db.Registration });
-
-export default db;
+module.exports = { sequelize, Usuario, Evento, Ingresso };
