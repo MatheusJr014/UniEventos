@@ -14,7 +14,6 @@ const router = createRouter({
       component: HomeView,
     },
     {
-<<<<<<< HEAD
       path: '/eventos',
       name: 'teste',
       component: EventoView,
@@ -33,8 +32,8 @@ const router = createRouter({
       path:'/lista/eventos',
       name: 'teste4',
       component: EventosListView
-    }
-=======
+    },
+    {
       path: "/evento",
       name: "evento",
       component: EventoView,
@@ -54,7 +53,6 @@ const router = createRouter({
       name: "eventos",
       component: EventosListView,
     },
->>>>>>> 49f30c86f6255fba97b50cd79c2f3eced19b25c0
   ],
 });
 
