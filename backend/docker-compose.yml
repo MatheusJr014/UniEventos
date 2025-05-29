@@ -24,8 +24,6 @@ services:
       DB_NAME: eventdb
       DB_USER: user
       DB_PASS: password
-    volumes:
-      - .:/app
     command: node app.js
 
 volumes:
