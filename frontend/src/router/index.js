@@ -4,6 +4,8 @@ import EventoView from "@/views/EventoView.vue";
 import AdminView from "@/views/AdminView.vue";
 import UsuarioView from "@/views/UsuarioView.vue";
 import EventosListView from "@/views/EventosListView.vue";
+import GuardAdmin from '../middleware/AuthAdmin'; 
+import GuardUser from '../middleware/AuthUser'; 
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -20,39 +22,21 @@ const router = createRouter({
     },
     {
       path: '/admin',
-      name: 'teste2',
+      name: 'admin',
+      beforeEnter: GuardAdmin.authAdmin,
       component: AdminView
     },
     {
-      path: '/usuario',
-      name: 'teste3',
+      path: '/perfil/usuario',
+      name: 'usuario',
+      beforeEnter: GuardUser.authUser, 
       component: UsuarioView
     },
     {
       path:'/lista/eventos',
-      name: 'teste4',
+      name: 'listaDeEvento',
       component: EventosListView
-    },
-    {
-      path: "/evento",
-      name: "evento",
-      component: EventoView,
-    },
-    {
-      path: "/dashboard",
-      name: "dashboard",
-      component: AdminView,
-    },
-    {
-      path: "/perfil",
-      name: "perfil",
-      component: UsuarioView,
-    },
-    {
-      path: "/eventos",
-      name: "eventos",
-      component: EventosListView,
-    },
+    }
   ],
 });
 
