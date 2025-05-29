@@ -30,4 +30,15 @@ Ingresso.belongsTo(Evento);
 Usuario.hasMany(Ingresso);
 Evento.hasMany(Ingresso);
 
+
+Usuario.hasMany(Compras);
+Compras.belongsTo(Ingresso);
+
+
+
+
+
+
+
+
 module.exports = { sequelize, Usuario, Evento, Ingresso, Compras, Avaliacoes };
