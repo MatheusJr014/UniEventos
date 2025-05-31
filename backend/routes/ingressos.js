@@ -1,30 +1,13 @@
-const express = require('express');
-const router = express.Router();
-const { Usuario, Evento, Ingresso } = require('../models');
+const express = require('express'); 
 
-router.get('/', async (req, res) => {
-  const ingressos = await Ingresso.findAll({
-    include: [Usuario, Evento]
-  });
-  res.json(ingressos);
-});
+const router = express.Router(); 
 
-router.post('/', async (req, res) => {
-  const { usuarioId, eventoId } = req.body;
-  const usuario = await Usuario.findByPk(usuarioId);
-  const evento = await Evento.findByPk(eventoId);
-  if (usuario && evento) {
-    await usuario.addEvento(evento);
-    res.json({ message: 'Ingresso criado' });
-  } else {
-    res.status(404).json({ message: 'Usuário ou evento não encontrado' });
-  }
-});
+const ingressoController = require('../controllers/ingressosController'); 
 
-router.delete('/', async (req, res) => {
-  const { usuarioId, eventoId } = req.body;
-  await Ingresso.destroy({ where: { UsuarioId: usuarioId, EventoId: eventoId } });
-  res.json({ message: 'Ingresso removido' });
-});
+
+router.get('/', ingressoController.getAllIngresso);
+router.get('/:id', ingressoController.getIngressoById);
+router.post('/', ingressoController.createIngresso);
+router.delete('/:id', ingressoController.deleteIngresso);
 
 module.exports = router;

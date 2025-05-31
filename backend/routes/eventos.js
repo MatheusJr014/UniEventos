@@ -1,17 +1,14 @@
-const express = require('express');
-const router = express.Router();
-const { Evento } = require('../models');
+const express = require('express'); 
+const router = express.Router(); 
 
-router.get('/', async (req, res) => res.json(await Evento.findAll()));
-router.get('/:id', async (req, res) => res.json(await Evento.findByPk(req.params.id)));
-router.post('/', async (req, res) => res.json(await Evento.create(req.body)));
-router.put('/:id', async (req, res) => {
-  await Evento.update(req.body, { where: { id: req.params.id } });
-  res.json({ message: 'Atualizado' });
-});
-router.delete('/:id', async (req, res) => {
-  await Evento.destroy({ where: { id: req.params.id } });
-  res.json({ message: 'Removido' });
-});
+
+const eventoController = require('../controllers/eventosController'); 
+
+
+router.get('/', eventoController.getAllEventos); 
+router.get('/:id', eventoController.getEventoById); 
+router.post('/', eventoController.createEvento); 
+router.put('/:id', eventoController.updateEvento); 
+router.delete('/:id', eventoController.deleteEvento); 
 
 module.exports = router;
