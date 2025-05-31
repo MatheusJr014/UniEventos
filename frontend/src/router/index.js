@@ -29,13 +29,17 @@ const router = createRouter({
     {
       path: '/perfil/usuario',
       name: 'usuario',
-      beforeEnter: GuardUser.authUser, 
       component: UsuarioView
     },
     {
       path:'/lista/eventos',
       name: 'listaDeEvento',
       component: EventosListView
+    },
+    {
+      path: '/teste/',
+      name: 'teste', 
+      component: ()=>import('../components/login e cadastro/cadastro.vue')
     }
   ],
 });

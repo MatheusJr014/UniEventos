@@ -7,6 +7,5 @@ module.exports = (sequelize) => {
     cpf: DataTypes.INTEGER, 
     senha: DataTypes.STRING, 
     tipouser: DataTypes.BOOLEAN, 
-    datacadastro: DataTypes.TIME,
   });
 };
