@@ -1,13 +1,8 @@
 const express = require('express'); 
 const router = express.Router(); 
-const { Avaliacoes } = require('../models'); 
 
+const avalicoesController = require('../controllers/avaliacoesController');
 
-router.get('/', async (req, res)=> res.json(await Avaliacoes.FindALL())); 
-
-
-
-
-
+router.get('/', avalicoesController.getAllAvaliacoes); 
 
 module.exports = router; 
