@@ -23,7 +23,7 @@ const Avaliacoes = require('./avaliacoes')(sequelize);
 // // Usuario -> Evento 
 // Usuario.belongsToMany(Evento, { through: Ingresso });
 // Evento.belongsToMany(Usuario, { through: Ingresso });
-
+// Removido devido ao motivo que isso acima não criava a pk pro ingresso que era algo necessário 
 
 Ingresso.belongsTo(Usuario);
 Ingresso.belongsTo(Evento);
