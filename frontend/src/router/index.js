@@ -17,7 +17,7 @@ const router = createRouter({
     },
     {
       path: '/eventos',
-      name: 'teste',
+      name: 'eventos',
       component: EventoView,
     },
     {
@@ -39,7 +39,7 @@ const router = createRouter({
     {
       path: '/teste/',
       name: 'teste', 
-      component: ()=>import('../components/login e cadastro/cadastro.vue')
+      component: ()=>import('../components/Publico/Evento Details/HeaderProfileComponents.vue')
     }
   ],
 });

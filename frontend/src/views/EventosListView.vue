@@ -860,7 +860,7 @@
 </template>
 
 <script>
-import EventHeader from "../components/HeaderEventComponents.vue";
+import EventHeader from "@/components/Publico/Evento Details/HeaderEventComponents.vue";
 
 export default {
   name: "ListagemEventos",

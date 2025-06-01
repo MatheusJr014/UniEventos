@@ -191,10 +191,10 @@
 </template>
 
 <script>
-import RelatedEvents from "@/components/RelatedEventsComponents.vue";
-import EventHeader from "@/components/HeaderEventComponents.vue";
-import EventFooter from "@/components/FooterEventComponents.vue";
-import SideBarEvent from "@/components/SideBarEventComponents.vue";
+import RelatedEvents from "@/components/Publico/Evento Details/RelatedEventsComponents.vue";
+import EventHeader from "@/components/Publico/Evento Details/HeaderEventComponents.vue";
+import EventFooter from "@/components/Publico/Evento Details/FooterEventComponents.vue";
+import SideBarEvent from "@/components/Publico/Evento Details/SideBarEventComponents.vue";
 
 export default {
   name: "EventoDetalhes",
