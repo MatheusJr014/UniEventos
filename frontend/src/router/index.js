@@ -39,7 +39,7 @@ const router = createRouter({
     {
       path: '/teste/',
       name: 'teste', 
-      component: ()=>import('../components/Publico/Evento Details/HeaderProfileComponents.vue')
+      component: ()=>import('../components/loginEcadastro/MainComponent.vue')
     }
   ],
 });
