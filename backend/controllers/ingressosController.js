@@ -11,18 +11,33 @@ exports.getIngressoById = async (req, res)=> {
     res.json(ingresso); 
 }
 
-exports.createIngresso = async (req, res)=> {
-    const { usuarioId, eventoId} = req.body; 
-    const usuario = await Usuario.findByPk(usuarioId); 
-    const evento = await Evento.findByPk(eventoId);
-    if (usuario && evento ){
-        await usuario.addEvento(evento); 
-        res.json({ message: 'Ingresso criado' }); 
+exports.createIngresso = async (req, res) => {
+    const { usuarioId, eventoId, tipoingresso, preco, quantidadeTotal, quantidadeDisponivel } = req.body; 
 
-    }else {
-        res.status(404).json({ message: 'Usuario ou evento não encontrado'}); 
+    try {
+        const usuario = await Usuario.findByPk(usuarioId);
+        const evento = await Evento.findByPk(eventoId);
+
+        if (!usuario || !evento) {
+            return res.status(404).json({ message: 'Usuario ou evento não encontrado' });
+        }
+
+        const ingresso = await Ingresso.create({
+            UsuarioId: usuarioId,
+            EventoId: eventoId,
+            tipoingresso: tipoingresso || null,
+            preco: preco || null,
+            quantidadeTotal: quantidadeTotal || null,
+            quantidadeDisponivel: quantidadeDisponivel || null
+        });
+
+        res.status(201).json(ingresso);  // Agora retorna o ingresso com o ID e tudo mais!
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Erro ao criar ingresso' });
     }
-}; 
+};
+
 
 exports.deleteIngresso = async (req,res)=> {
     const deleted = await Ingresso.destroy({ where: {id: req.params.id }}); 

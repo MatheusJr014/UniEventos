@@ -20,9 +20,9 @@ const Avaliacoes = require('./avaliacoes')(sequelize);
 
 
 
-// Usuario -> Evento 
-Usuario.belongsToMany(Evento, { through: Ingresso });
-Evento.belongsToMany(Usuario, { through: Ingresso });
+// // Usuario -> Evento 
+// Usuario.belongsToMany(Evento, { through: Ingresso });
+// Evento.belongsToMany(Usuario, { through: Ingresso });
 
 
 Ingresso.belongsTo(Usuario);
