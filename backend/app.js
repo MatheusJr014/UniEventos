@@ -19,7 +19,10 @@ app.use('/avaliacoes', require('./routes/avaliacoes'));
 
 app.use('/login', require('./routes/login'));
 
-
-sequelize.sync().then(() => {
-  app.listen(3000, () => console.log('Servidor rodando em http://localhost:3000'));
-});
+sequelize.sync({ alter: true })
+  .then(() => {
+    console.log('Banco sincronizado com sucesso!');
+    app.listen(3000, () => {
+      console.log('Servidor rodando na porta 3000');
+    });
+  })
