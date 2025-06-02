@@ -51,7 +51,7 @@
                                                 </ul>
                                             </div>
                                             <div>
-                                                <LoginComponent v-if="isLogin" />
+                                                <LoginComponent v-if="isLogin"/>
                                                 <CadastroComponent v-else />
                                             </div>
                                         </div>
@@ -78,7 +78,7 @@ export default {
     data() {
         return {
             isLogin: false,
-            activeTab: 'login',
+            activeTab: 'register',
             showLoginPassword: false,
             showRegisterPassword: false,
             showRegisterConfirmPassword: false,
@@ -87,15 +87,7 @@ export default {
         };
     },
     methods: {
-        validateEmail(email) {
-            const re = /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
-            return re.test(String(email).toLowerCase());
-        },
 
-        validatePassword(password) {
-            // Password must contain at least one letter and one number
-            return /[A-Za-z]/.test(password) && /[0-9]/.test(password);
-        }
     }
 };
 </script>

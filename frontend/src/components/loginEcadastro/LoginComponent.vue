@@ -19,12 +19,12 @@
             </div>
 
             <!-- Login Form -->
-            <form @submit.prevent="login">
+            <form @submit.prevent="submit">
                 <div class="mb-3">
                     <label for="loginEmail" class="form-label">Email</label>
-                    <input type="email" class="form-control" id="loginEmail" v-model="loginForm.email"
-                        :class="{ 'is-invalid': loginErrors.email }" required>
-                    <div class="invalid-feedback">{{ loginErrors.email }}</div>
+                    <input type="email" class="form-control" id="loginEmail" v-model="email"
+                        required>
+                    <!-- <div class="invalid-feedback">{{ loginErrors.email }}</div> -->
                 </div>
                 <div class="mb-3">
                     <div class="d-flex justify-content-between">
@@ -34,16 +34,16 @@
                     </div>
                     <div class="input-group">
                         <input :type="showLoginPassword ? 'text' : 'password'" class="form-control" id="loginPassword"
-                            v-model="loginForm.password" :class="{ 'is-invalid': loginErrors.password }" required>
+                            v-model="senha" required>
                         <button class="btn btn-outline-secondary" type="button"
                             @click="showLoginPassword = !showLoginPassword">
                             <i class="bi" :class="showLoginPassword ? 'bi-eye-slash' : 'bi-eye'"></i>
                         </button>
-                        <div class="invalid-feedback">{{ loginErrors.password }}</div>
+                        <!-- <div class="invalid-feedback">{{ loginErrors.password }}</div> -->
                     </div>
                 </div>
                 <div class="mb-3 form-check">
-                    <input type="checkbox" class="form-check-input" id="rememberMe" v-model="loginForm.rememberMe">
+                    <input type="checkbox" class="form-check-input" id="rememberMe">
                     <label class="form-check-label" for="rememberMe">Lembrar de mim</label>
                 </div>
                 <div class="d-grid">
@@ -65,65 +65,69 @@
     </div>
 </template>
 <script>
+
+import Swal from 'sweetalert2';
+
 export default {
     name: 'LoginComponent',
     data() {
         return {
-            loginForm: {
-                email: '',
-                password: '',
-                rememberMe: false
-            },
-            loginErrors: {
-                email: '',
-                password: ''
-            },
+            loginLoading: false,
+            email: '',
+            senha: ''    
         }
     },
     methods: {
-        login() {
-            // Reset errors
-            this.loginErrors = {
-                email: '',
-                password: ''
-            };
-
-            // Validate form
-            let isValid = true;
-
-            if (!this.loginForm.email) {
-                this.loginErrors.email = 'O email é obrigatório';
-                isValid = false;
-            } else if (!this.validateEmail(this.loginForm.email)) {
-                this.loginErrors.email = 'Por favor, insira um email válido';
-                isValid = false;
-            }
-
-            if (!this.loginForm.password) {
-                this.loginErrors.password = 'A senha é obrigatória';
-                isValid = false;
-            }
-
-            if (!isValid) return;
-
-            // Submit form
+        async submit() {
             this.loginLoading = true;
 
-            // Simulate API call
-            setTimeout(() => {
-                this.loginLoading = false;
+            const payload = { 
+                email: this.email,
+                senha: this.senha
 
-                // Show success message
-                this.successModalTitle = 'Login realizado com sucesso';
-                this.successModalMessage = 'Você será redirecionado para a página inicial.';
-                this.showSuccessModal = true;
+            }; 
+            try{
+                const response = await fetch (`http://localhost:3000/login`, {
+                    method: 'POST', 
+                    headers: {
+                        'Content-Type': 'application/json' 
+                    },
+                    body: JSON.stringify(payload)
+                }); 
+                if (!response.ok) {
+                    if (response.status === 401) {
+                        throw new Error('Credenciais inválidas. Verifique seu email ou senha.');
+                    }
+                    throw new Error(`Erro ao fazer login. Código: ${response.status}`);
+                }
 
-                // Redirect to home page after 2 seconds
-                setTimeout(() => {
-                    // In a real app, this would redirect to the home page
-                    console.log('Redirect to home page');
-                }, 2000);
-            }, 1500);
+                const res = await response.json(); 
+                const token = res.token;  
+                if (token) {
+                    localStorage.setItem('token', token); // Salva o token no localStorage
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Login realizado!',
+                        text: 'Entrando...',
+                        timer: 2000,
+                        showConfirmButton: false
+                    }).then(() => {
+                        this.$router.push('/'); // Redireciona após login
+                    });
+                } else {
+                    throw new Error('Token não recebido na resposta.');
+                }
+            }catch(error){
+                console.error('Erro na requisição:', error);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Erro no login',
+                    text: error.message || 'Ocorreu um erro ao tentar fazer login. Tente novamente.',
+                    confirmButtonColor: '#dc3545'
+                });
+            } finally{
+                this.loginLoading = false; 
+            }
         },
     }
 }
