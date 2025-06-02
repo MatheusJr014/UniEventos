@@ -1,55 +1,51 @@
 <template>
   <div class="col-lg-4">
-    <div
-      class="card border-0 shadow-sm mb-4 sticky-top"
-      style="top: 90px; z-index: 10"
-    >
+    <div class="card border-0 shadow-sm mb-4 sticky-top" style="top: 90px; z-index: 10">
       <div class="card-body">
         <h3 class="h5 fw-bold mb-3">Ingressos</h3>
 
-        <div class="mb-4">
-          <div
-            v-for="(ticket, index) in tickets"
-            :key="index"
-            class="card mb-3 border"
-          >
+        <!-- Loading state -->
+        <div v-if="loading" class="text-center py-3">
+          <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Carregando...</span>
+          </div>
+        </div>
+
+        <!-- Lista de ingressos -->
+        <div v-else class="mb-4">
+          <div v-for="(ticket, index) in tickets" :key="ticket.id" class="card mb-3 border">
             <div class="card-body">
-              <div
-                class="d-flex justify-content-between align-items-start mb-2"
-              >
+              <div class="d-flex justify-content-between align-items-start mb-2">
                 <div>
-                  <h6 class="mb-1">{{ ticket.name }}</h6>
-                  <p class="text-muted small mb-0">{{ ticket.description }}</p>
+                  <h6 class="mb-1">{{ ticket.tipoingresso }}</h6>
+                  <p class="text-muted small mb-0">{{ ticket.tipoingresso }}</p>
                 </div>
-                <span
-                  class="badge"
-                  :class="ticket.available ? 'bg-success' : 'bg-danger'"
-                >
-                  {{ ticket.available ? "Disponível" : "Esgotado" }}
+                <span class="badge" :class="ticket.quantidadeDisponivel ? 'bg-success' : 'bg-danger'">
+                  {{ ticket.quantidadeDisponivel ? "Disponível" : "Esgotado" }}
                 </span>
               </div>
               <div class="d-flex justify-content-between align-items-center">
-                <div class="fw-bold">R$ {{ ticket.price.toFixed(2) }}</div>
+                <div class="fw-bold">R$ {{ ticket.preco.toFixed(2).replace('.', ',') }}</div>
                 <div class="input-group input-group-sm" style="width: 110px">
                   <button
                     class="btn btn-outline-secondary"
                     type="button"
-                    :disabled="!ticket.available || ticket.quantity <= 0"
-                    @click="$emit('decrement', index)"
+                    :disabled="!ticket.quantidadeDisponivel || ticket.quantidadeDisponivel <= 0"
+                    @click="decrementTicket(index)"
                   >
                     -
                   </button>
                   <input
                     type="text"
                     class="form-control text-center"
-                    :value="ticket.quantity"
+                    :value="ticket.quantidade"
                     readonly
                   />
                   <button
                     class="btn btn-outline-secondary"
                     type="button"
-                    :disabled="!ticket.available"
-                    @click="$emit('increment', index)"
+                    :disabled="!ticket.quantidadeDisponivel"
+                    @click="incrementTicket(index)"
                   >
                     +
                   </button>
@@ -59,18 +55,19 @@
           </div>
         </div>
 
+        <!-- Resumo do pedido -->
         <div class="mb-3">
           <div class="d-flex justify-content-between mb-2">
             <span>Subtotal</span>
-            <span>R$ {{ subtotal.toFixed(2) }}</span>
+            <span>R$ {{ subtotal.toFixed(2).replace('.', ',') }}</span>
           </div>
           <div class="d-flex justify-content-between mb-2">
             <span>Taxa de serviço</span>
-            <span>R$ {{ serviceFee.toFixed(2) }}</span>
+            <span>R$ {{ serviceFee.toFixed(2).replace('.', ',') }}</span>
           </div>
           <div class="d-flex justify-content-between fw-bold">
             <span>Total</span>
-            <span>R$ {{ total.toFixed(2) }}</span>
+            <span>R$ {{ total.toFixed(2).replace('.', ',') }}</span>
           </div>
         </div>
 
@@ -78,9 +75,7 @@
           Comprar Ingressos
         </button>
 
-        <div
-          class="d-flex align-items-center justify-content-center text-muted small"
-        >
+        <div class="d-flex align-items-center justify-content-center text-muted small">
           <i class="bi bi-shield-check me-2"></i>
           <span>Compra 100% segura</span>
         </div>
@@ -93,26 +88,63 @@
 export default {
   name: "SideBarEvent",
   props: {
-    tickets: {
-      type: Array,
-      required: true,
-      default: () => [],
-    },
-    subtotal: {
-      type: Number,
-      required: true,
-      default: 0,
-    },
-    serviceFee: {
-      type: Number,
-      required: true,
-      default: 0,
-    },
-    total: {
-      type: Number,
-      required: true,
-      default: 0,
-    },
+    eventId: { type: Number, required: true },
+    // Opcional: Se o pai quiser controlar o estado
+    modelValue: { type: Array, default: () => [] }
   },
+  data() {
+    return {
+      loading: true,
+      tickets: [],
+      subtotal: 0,
+      serviceFee: 0,
+      total: 0
+    };
+  },
+  async created() {
+    await this.fetchTickets();
+  },
+  methods: {
+    async fetchTickets() {
+      try {
+        this.loading = true;
+        const response = await fetch(`http://localhost:3000/ingressos?eventoId=${this.eventId}`);
+        if (!response.ok) throw new Error('Erro ao carregar ingressos');
+        
+        const data = await response.json();
+        this.tickets = data.map(ticket => ({
+          ...ticket,
+          quantidade: 0,
+          preco: parseFloat(ticket.preco)
+        }));
+        
+        this.calculateTotals();
+      } catch (error) {
+        console.error("Erro ao carregar ingressos:", error);
+      } finally {
+        this.loading = false;
+      }
+    },
+    incrementTicket(index) {
+      if (this.tickets[index].quantidadeDisponivel) {
+        this.tickets[index].quantidade++;
+        this.calculateTotals();
+      }
+    },
+    decrementTicket(index) {
+      if (this.tickets[index].quantidade > 0) {
+        this.tickets[index].quantidade--;
+        this.calculateTotals();
+      }
+    },
+    calculateTotals() {
+      this.subtotal = this.tickets.reduce((total, ticket) => {
+        return total + (ticket.preco * ticket.quantidade);
+      }, 0);
+      
+      this.serviceFee = this.subtotal * 0.1; // 10% de taxa
+      this.total = this.subtotal + this.serviceFee;
+    }
+  }
 };
 </script>

@@ -179,14 +179,7 @@
             </div>
 
             <!-- Sidebar -->
-            <SideBarEvent
-              :tickets="evento.tickets"
-              :subtotal="subtotal"
-              :serviceFee="serviceFee"
-              :total="total"
-              @increment="incrementTicket"
-              @decrement="decrementTicket"
-            />
+            <SideBarEvent :event-id="evento.id" />
           </div>
         </div>
       </section>
@@ -272,28 +265,28 @@ export default {
     }
   },
   methods: {
-    incrementTicket(index) {
-      if (this.evento.tickets[index].available) {
-        this.evento.tickets[index].quantity++;
-      }
-    },
-    decrementTicket(index) {
-      if (this.evento.tickets[index].quantity > 0) {
-        this.evento.tickets[index].quantity--;
-      }
-    },
-    calculateSubtotal() {
-      return this.evento.tickets.reduce((total, ticket) => {
-        return total + ticket.price * ticket.quantity;
-      }, 0);
-    },
-    calculateServiceFee() {
-      // 10% de taxa de serviço
-      return this.calculateSubtotal() * 0.1;
-    },
-    calculateTotal() {
-      return this.calculateSubtotal() + this.calculateServiceFee();
-    },
+    // incrementTicket(index) {
+    //   if (this.evento.tickets[index].available) {
+    //     this.evento.tickets[index].quantity++;
+    //   }
+    // },
+    // decrementTicket(index) {
+    //   if (this.evento.tickets[index].quantity > 0) {
+    //     this.evento.tickets[index].quantity--;
+    //   }
+    // },
+    // calculateSubtotal() {
+    //   return this.evento.tickets.reduce((total, ticket) => {
+    //     return total + ticket.price * ticket.quantity;
+    //   }, 0);
+    // },
+    // calculateServiceFee() {
+    //   // 10% de taxa de serviço
+    //   return this.calculateSubtotal() * 0.1;
+    // },
+    // calculateTotal() {
+    //   return this.calculateSubtotal() + this.calculateServiceFee();
+    // },
     formatDate(dateString) {
       const options = { day: "2-digit", month: "long", year: "numeric" };
       return new Date(dateString).toLocaleDateString("pt-BR", options);
