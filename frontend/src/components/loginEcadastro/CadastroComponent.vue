@@ -30,10 +30,26 @@
             <div class="invalid-feedback">{{ registerErrors.nome }}</div>
           </div>
           <div class="col-md-6">
+            <label for="registerSobrenome" class="form-label">Sobrenome</label>
+            <input type="text" class="form-control" id="registerLastName" v-model="registerForm.sobrenome"
+              :class="{ 'is-invalid': registerErrors.sobrenome }" required>
+            <div class="invalid-feedback">{{ registerErrors.sobrenome }}</div>
+          </div>
+          <div class="col-md-6">
             <label for="registerCPF" class="form-label">CPF</label>
             <input type="text" class="form-control" id="registerLastName" v-model="registerForm.cpf"
               :class="{ 'is-invalid': registerErrors.cpf }" required>
             <div class="invalid-feedback">{{ registerErrors.cpf }}</div>
+          </div>
+          <div class="col-md-6">
+            <label for="registerConsumer" class="form-label">Cargo</label>
+            <select v-model="registerForm.tipouser" class="form-select" id="registerConsumer"
+              :class="{ 'is-invalid': registerErrors.tipouser }" required>
+              <option disabled value="">Selecione...</option>
+              <option :value="1">Organizador</option>
+              <option :value="0">Espectador</option>
+            </select>
+            <div class="invalid-feedback">{{ registerErrors.tipouser }}</div>
           </div>
           <!-- <div class="col-md-6">
             <label for="registerLastName" class="form-label">Sobrenome</label>
@@ -47,6 +63,7 @@
               :class="{ 'is-invalid': registerErrors.email }" required>
             <div class="invalid-feedback">{{ registerErrors.email }}</div>
           </div>
+
           <div class="col-md-6">
             <label for="registerPassword" class="form-label">Senha</label>
             <div class="input-group">
@@ -118,7 +135,7 @@
 <script>
 import Swal from 'sweetalert2';
 import axios from 'axios';
-import { validateNome, validateCPF, validateConfirmPassword, validateSenha, validateEmail } from  '@/assets/validate';
+import { validateNome, validateCPF, validateConfirmPassword, validateSenha, validateEmail } from '@/assets/validate';
 
 export default {
   name: 'CadastroComponent',
@@ -127,14 +144,16 @@ export default {
       activeTab: 'register',
       registerForm: {
         nome: '',
+        sobrenome: '',
         email: '',
         cpf: '',
-        tipouser: '0',
+        tipouser: '',
         senha: '',
-        confirmPassword: '' 
+        confirmPassword: ''
       },
       registerErrors: {
         nome: '',
+        sobrenome: '', 
         email: '',
         cpf: '',
         tipouser: '',
@@ -190,6 +209,7 @@ export default {
       try {
         await axios.post('http://localhost:3000/usuarios', {
           nome: this.registerForm.nome,
+          sobrenome: this.registerForm.sobrenome,
           email: this.registerForm.email,
           cpf: this.registerForm.cpf,
           tipouser: this.registerForm.tipouser,

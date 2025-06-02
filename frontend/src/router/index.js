@@ -6,6 +6,7 @@ import UsuarioView from "@/views/UsuarioView.vue";
 import EventosListView from "@/views/EventosListView.vue";
 import GuardAdmin from '../services/middleware/AuthAdmin'; 
 import GuardUser from '../services/middleware/AuthUser'; 
+import LoginAndCadastroView from "@/views/LoginAndCadastroView.vue";
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -36,6 +37,11 @@ const router = createRouter({
       path:'/lista/eventos',
       name: 'listaDeEvento',
       component: EventosListView
+    },
+    {
+      path: '/login',
+      name: 'login',
+      component: LoginAndCadastroView
     },
     {
       path: '/teste/',
