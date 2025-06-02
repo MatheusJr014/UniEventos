@@ -16,9 +16,10 @@ const router = createRouter({
       component: HomeView,
     },
     {
-      path: '/eventos',
-      name: 'eventos',
+      path: '/evento/:id',  
+      name: 'evento-detalhes',
       component: EventoView,
+      props: true
     },
     {
       path: '/admin',
