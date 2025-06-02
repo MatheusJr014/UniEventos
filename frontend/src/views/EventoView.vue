@@ -37,19 +37,21 @@
                 class="position-relative rounded overflow-hidden shadow mb-4"
               >
                 <img
-                  :src="evento.imageLarge"
-                  :alt="evento.title"
+                  :src="evento.imagemevento"
+                  :alt="evento.nomeevento"
                   class="img-fluid w-100"
+                  style="max-height: 500px; object-fit: cover"
                 />
                 <span
                   class="position-absolute top-0 end-0 badge bg-primary m-3"
-                  >{{ evento.category }}</span
                 >
+                  {{ evento.categoria }}
+                </span>
               </div>
               <div
                 class="d-flex justify-content-between align-items-center mb-4"
               >
-                <h1 class="h2 fw-bold mb-0">{{ evento.title }}</h1>
+                <h1 class="h2 fw-bold mb-0">{{ evento.nomeevento }}</h1>
                 <div class="d-flex gap-2">
                   <button
                     class="btn btn-outline-secondary btn-sm"
@@ -79,7 +81,15 @@
                         </div>
                         <div>
                           <h6 class="mb-1">Data e Hora</h6>
-                          <p class="mb-0">{{ evento.fullDate }}</p>
+                          <p class="mb-0">
+                            {{ formatDate(evento.datainicio) }}
+                            <span v-if="evento.datafim !== evento.datainicio">
+                              a {{ formatDate(evento.datafim) }}
+                            </span>
+                            <br />
+                            Das {{ formatTime(evento.horainicio) }} às
+                            {{ formatTime(evento.horafim) }}
+                          </p>
                         </div>
                       </div>
                     </div>
@@ -92,7 +102,7 @@
                         </div>
                         <div>
                           <h6 class="mb-1">Local</h6>
-                          <p class="mb-0">{{ evento.venue }}</p>
+                          <p class="mb-0">{{ evento.local }}</p>
                         </div>
                       </div>
                     </div>
@@ -104,9 +114,9 @@
               <div class="card border-0 shadow-sm mb-4">
                 <div class="card-body">
                   <h3 class="h5 fw-bold mb-3">Sobre o Evento</h3>
-                  <div class="mb-4" v-html="evento.description"></div>
+                  <div class="mb-4" v-html="evento.descricao"></div>
 
-                  <h3 class="h5 fw-bold mb-3">Informações Importantes</h3>
+                  <!-- <h3 class="h5 fw-bold mb-3">Informações Importantes</h3>
                   <ul class="mb-0">
                     <li
                       v-for="(info, index) in evento.importantInfo"
@@ -115,7 +125,7 @@
                     >
                       {{ info }}
                     </li>
-                  </ul>
+                  </ul> -->
                 </div>
               </div>
 
@@ -140,7 +150,7 @@
               </div>
 
               <!-- Organizer -->
-              <div class="card border-0 shadow-sm mb-4">
+              <!-- <div class="card border-0 shadow-sm mb-4">
                 <div class="card-body">
                   <h3 class="h5 fw-bold mb-3">Organizador</h3>
                   <div class="d-flex align-items-center">
@@ -165,7 +175,7 @@
                     </div>
                   </div>
                 </div>
-              </div>
+              </div> -->
             </div>
 
             <!-- Sidebar -->
@@ -206,78 +216,9 @@ export default {
   },
   data() {
     return {
-      evento: {
-        id: 1,
-        title: "Festival de Música Verão 2023",
-        category: "Festival",
-        image: "https://placehold.co/600x400",
-        imageLarge: "https://placehold.co/1200x600",
-        date: "15-17 Dez 2023",
-        fullDate: "15 a 17 de Dezembro de 2023, das 14:00 às 00:00",
-        location: "Praia de Copacabana, Rio de Janeiro",
-        venue: "Arena Copacabana",
-        fullAddress:
-          "Av. Atlântica, s/n - Copacabana, Rio de Janeiro - RJ, 22070-000",
-        price: 150.0,
-        description: `<p>O Festival de Música Verão 2023 é o maior evento de música do ano, reunindo os melhores artistas nacionais e internacionais em um fim de semana inesquecível à beira-mar.</p>
-          <p>Com três palcos e mais de 30 atrações, o festival oferece uma experiência musical diversificada, abrangendo gêneros como pop, rock, eletrônica, hip-hop e MPB. Além dos shows, o evento conta com áreas gastronômicas, espaços de arte e atividades interativas.</p>
-          <p>Prepare-se para três dias de muita música, diversão e conexões em um dos cartões-postais mais famosos do Brasil!</p>
-          <h4>Line-up confirmado:</h4>
-          <ul>
-            <li>Sexta-feira (15/12): Banda Nacional, DJ Internacional, Cantora Pop</li>
-            <li>Sábado (16/12): Grupo de Rock, Rapper Famoso, Banda Indie</li>
-            <li>Domingo (17/12): Artista MPB, Dupla Sertaneja, DJ Eletrônico</li>
-          </ul>`,
-        importantInfo: [
-          "É obrigatória a apresentação de documento com foto para entrada no evento",
-          "Proibida a entrada de bebidas e alimentos externos",
-          "Menores de 16 anos somente acompanhados dos pais ou responsáveis legais",
-          "Em caso de chuva, o evento acontecerá normalmente",
-          "Não é permitida a entrada de animais, exceto cães-guia",
-        ],
-        organizer: {
-          name: "Produtora Eventos Brasil",
-          image: "https://placehold.co/100x100",
-          events: 45,
-        },
-        tickets: [
-          {
-            name: "Ingresso Meia-Entrada - 1 Dia",
-            description: "Válido para um dia do evento (escolha na entrada)",
-            price: 75.0,
-            available: true,
-            quantity: 0,
-          },
-          {
-            name: "Ingresso Inteira - 1 Dia",
-            description: "Válido para um dia do evento (escolha na entrada)",
-            price: 150.0,
-            available: true,
-            quantity: 0,
-          },
-          {
-            name: "Passaporte Meia-Entrada - 3 Dias",
-            description: "Acesso aos três dias do festival",
-            price: 180.0,
-            available: true,
-            quantity: 0,
-          },
-          {
-            name: "Passaporte Inteira - 3 Dias",
-            description: "Acesso aos três dias do festival",
-            price: 360.0,
-            available: true,
-            quantity: 0,
-          },
-          {
-            name: "Ingresso VIP - 3 Dias",
-            description: "Acesso à área VIP com open bar e food",
-            price: 750.0,
-            available: false,
-            quantity: 0,
-          },
-        ],
-      },
+      evento: null,
+      loading: true,
+      error: null,
       relatedEvents: [
         {
           id: 2,
@@ -309,6 +250,27 @@ export default {
       ],
     };
   },
+  async created() {
+    try {
+      const response = await fetch(
+        `http://localhost:3000/eventos/${this.$route.params.id}`
+      );
+      if (!response.ok) throw new Error("Evento não encontrado");
+
+      this.evento = await response.json();
+
+      // Adicione tratamento especial para datas
+      this.evento.fullDate = this.formatDateRange(
+        this.evento.datainicio,
+        this.evento.datafim
+      );
+    } catch (err) {
+      this.error = err.message;
+      console.error("Erro ao carregar evento:", err);
+    } finally {
+      this.loading = false;
+    }
+  },
   methods: {
     incrementTicket(index) {
       if (this.evento.tickets[index].available) {
@@ -331,6 +293,31 @@ export default {
     },
     calculateTotal() {
       return this.calculateSubtotal() + this.calculateServiceFee();
+    },
+    formatDate(dateString) {
+      const options = { day: "2-digit", month: "long", year: "numeric" };
+      return new Date(dateString).toLocaleDateString("pt-BR", options);
+    },
+    formatTime(timeString) {
+      return timeString.substring(0, 5);
+    },
+    formatDateRange(start, end) {
+      if (start === end) return this.formatDate(start);
+
+      const startDate = new Date(start);
+      const endDate = new Date(end);
+
+      if (
+        startDate.getMonth() === endDate.getMonth() &&
+        startDate.getFullYear() === endDate.getFullYear()
+      ) {
+        return `${startDate.getDate()} a ${endDate.getDate()} de ${startDate.toLocaleDateString(
+          "pt-BR",
+          { month: "long", year: "numeric" }
+        )}`;
+      }
+
+      return `${this.formatDate(start)} a ${this.formatDate(end)}`;
     },
   },
 };
