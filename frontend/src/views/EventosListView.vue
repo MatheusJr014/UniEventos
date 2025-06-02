@@ -436,12 +436,12 @@
                               : "Grátis"
                           }}
                         </div>
-                        <a
-                          :href="`/evento/${event.id}`"
+                        <router-link 
+                          :to="{ name: 'evento-detalhes', params: { id: event.id } }" 
                           class="btn btn-sm btn-primary"
                         >
                           Ver Detalhes
-                        </a>
+                        </router-link>
                       </div>
                     </div>
                   </div>
@@ -544,12 +544,12 @@
                           >
                             Disponível
                           </span>
-                          <a
-                            :href="'/evento/' + event.id"
-                            class="btn btn-primary btn-sm"
+                          <router-link 
+                            :to="{ name: 'evento-detalhes', params: { id: event.id } }" 
+                            class="btn btn-sm btn-primary"
                           >
                             Ver Detalhes
-                          </a>
+                          </router-link>
                         </div>
                       </div>
                     </div>
