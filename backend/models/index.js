@@ -25,10 +25,14 @@ const Avaliacoes = require('./avaliacoes')(sequelize);
 // Evento.belongsToMany(Usuario, { through: Ingresso });
 // Removido devido ao motivo que isso acima não criava a pk pro ingresso que era algo necessário 
 
+Evento.hasMany(Ingresso, { foreignKey: 'EventoId' });
+Ingresso.belongsTo(Evento, { foreignKey: 'EventoId' });
+
+
 Ingresso.belongsTo(Usuario);
-Ingresso.belongsTo(Evento);
+// Ingresso.belongsTo(Evento);
 Usuario.hasMany(Ingresso);
-Evento.hasMany(Ingresso);
+// Evento.hasMany(Ingresso);
 
 
 Usuario.hasMany(Compras);

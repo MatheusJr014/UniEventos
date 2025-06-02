@@ -11,6 +11,16 @@ module.exports = (sequelize) => {
     tipoingresso: DataTypes.STRING,
     preco: DataTypes.DECIMAL, 
     quantidadeTotal: DataTypes.INTEGER, 
-    quantidadeDisponivel: DataTypes.INTEGER
+    quantidadeDisponivel: DataTypes.INTEGER,
+    EventoId: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+      references: {
+        model: 'Eventos',
+        key: 'id'
+      },
+      onDelete: 'CASCADE'
+    }
+    
   });
 };
