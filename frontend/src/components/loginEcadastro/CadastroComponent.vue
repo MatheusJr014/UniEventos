@@ -21,20 +21,26 @@
       </div>
 
       <!-- Register Form -->
-      <form @submit.prevent="register">
+      <form @submit.prevent="saveCadastroUser">
         <div class="row g-3">
           <div class="col-md-6">
             <label for="registerFirstName" class="form-label">Nome</label>
-            <input type="text" class="form-control" id="registerFirstName" v-model="registerForm.firstName"
-              :class="{ 'is-invalid': registerErrors.firstName }" required>
-            <div class="invalid-feedback">{{ registerErrors.firstName }}</div>
+            <input type="text" class="form-control" id="registerFirstName" v-model="registerForm.nome"
+              :class="{ 'is-invalid': registerErrors.nome }" required>
+            <div class="invalid-feedback">{{ registerErrors.nome }}</div>
           </div>
           <div class="col-md-6">
+            <label for="registerCPF" class="form-label">CPF</label>
+            <input type="text" class="form-control" id="registerLastName" v-model="registerForm.cpf"
+              :class="{ 'is-invalid': registerErrors.cpf }" required>
+            <div class="invalid-feedback">{{ registerErrors.cpf }}</div>
+          </div>
+          <!-- <div class="col-md-6">
             <label for="registerLastName" class="form-label">Sobrenome</label>
             <input type="text" class="form-control" id="registerLastName" v-model="registerForm.lastName"
               :class="{ 'is-invalid': registerErrors.lastName }" required>
             <div class="invalid-feedback">{{ registerErrors.lastName }}</div>
-          </div>
+          </div> -->
           <div class="col-12">
             <label for="registerEmail" class="form-label">Email</label>
             <input type="email" class="form-control" id="registerEmail" v-model="registerForm.email"
@@ -45,12 +51,12 @@
             <label for="registerPassword" class="form-label">Senha</label>
             <div class="input-group">
               <input :type="showRegisterPassword ? 'text' : 'password'" class="form-control" id="registerPassword"
-                v-model="registerForm.password" :class="{ 'is-invalid': registerErrors.password }" required>
+                v-model="registerForm.senha" :class="{ 'is-invalid': registerErrors.senha }" required>
               <button class="btn btn-outline-secondary" type="button"
                 @click="showRegisterPassword = !showRegisterPassword">
                 <i class="bi" :class="showRegisterPassword ? 'bi-eye-slash' : 'bi-eye'"></i>
               </button>
-              <div class="invalid-feedback">{{ registerErrors.password }}</div>
+              <div class="invalid-feedback">{{ registerErrors.senha }}</div>
             </div>
             <div class="form-text">
               A senha deve ter pelo menos 8 caracteres, incluindo letras e números.
@@ -70,7 +76,7 @@
             </div>
           </div>
           <div class="col-12">
-            <div class="form-check">
+            <!-- <div class="form-check">
               <input class="form-check-input" type="checkbox" id="termsCheck" v-model="registerForm.agreeTerms"
                 :class="{ 'is-invalid': registerErrors.agreeTerms }" required>
               <label class="form-check-label" for="termsCheck">
@@ -78,15 +84,15 @@
                   class="text-decoration-none">Política de Privacidade</a>
               </label>
               <div class="invalid-feedback">{{ registerErrors.agreeTerms }}</div>
-            </div>
+            </div> -->
           </div>
           <div class="col-12">
-            <div class="form-check">
+            <!-- <div class="form-check">
               <input class="form-check-input" type="checkbox" id="newsletterCheck" v-model="registerForm.newsletter">
               <label class="form-check-label" for="newsletterCheck">
                 Desejo receber emails sobre eventos e promoções
               </label>
-            </div>
+            </div> -->
           </div>
           <div class="col-12">
             <div class="d-grid">
@@ -110,115 +116,106 @@
   </div>
 </template>
 <script>
+import Swal from 'sweetalert2';
+import axios from 'axios';
+import { validateNome, validateCPF, validateConfirmPassword, validateSenha, validateEmail } from  '@/assets/validate';
+
 export default {
   name: 'CadastroComponent',
   data() {
     return {
       activeTab: 'register',
       registerForm: {
-        firstName: '',
-        lastName: '',
+        nome: '',
         email: '',
-        password: '',
-        confirmPassword: '',
-        agreeTerms: false,
-        newsletter: true
+        cpf: '',
+        tipouser: '0',
+        senha: '',
+        confirmPassword: '' 
       },
       registerErrors: {
-        firstName: '',
-        lastName: '',
+        nome: '',
         email: '',
-        password: '',
-        confirmPassword: '',
-        agreeTerms: ''
-      },
+        cpf: '',
+        tipouser: '',
+        senha: '',
+        confirmPassword: ''
+      }
     };
   },
   methods: {
-    register() {
-      // Reset errors
-      this.registerErrors = {
-        firstName: '',
-        lastName: '',
-        email: '',
-        password: '',
-        confirmPassword: '',
-        agreeTerms: ''
-      };
+    validateNome() {
+      this.registerErrors.nome = validateNome(this.registerForm.nome);
+    },
+    validateEmail() {
+      this.registerErrors.email = validateEmail(this.registerForm.email);
+    },
+    validateSenha() {
+      this.registerErrors.senha = validateSenha(this.registerForm.senha, this.registerForm.confirmPassword);
+    },
+    validateConfirmPassword() {
+      this.registerErrors.confirmPassword = validateConfirmPassword(this.registerForm.confirmPassword, this.registerForm.senha);
+    },
+    validateCPF() {
+      this.registerErrors.cpf = validateCPF(this.registerForm.cpf);
+    },
+    validateForm() {
+      this.validateNome();
+      this.validateEmail();
+      this.validateSenha();
+      this.validateConfirmPassword();
+      this.validateCPF();
 
-      // Validate form
-      let isValid = true;
-
-      if (!this.registerForm.firstName) {
-        this.registerErrors.firstName = 'O nome é obrigatório';
-        isValid = false;
+      if (Object.values(this.registerErrors).some(error => error)) {
+        Swal.fire({
+          icon: 'error',
+          title: 'Erro no preenchimento',
+          text: 'Por favor, corrija os campos destacados antes de continuar.',
+        });
+        return false;
       }
-
-      if (!this.registerForm.lastName) {
-        this.registerErrors.lastName = 'O sobrenome é obrigatório';
-        isValid = false;
+      return true;
+    },
+    async saveCadastroUser() {
+      if (!this.validateForm()) {
+        Swal.fire({
+          icon: 'error',
+          title: 'Erro no cadastro',
+          text: 'Por favor, preencha os campos corretamente.',
+          confirmButtonColor: '#dc3545'
+        });
+        return;
       }
-
-      if (!this.registerForm.email) {
-        this.registerErrors.email = 'O email é obrigatório';
-        isValid = false;
-      } else if (!this.validateEmail(this.registerForm.email)) {
-        this.registerErrors.email = 'Por favor, insira um email válido';
-        isValid = false;
-      }
-
-      if (!this.registerForm.password) {
-        this.registerErrors.password = 'A senha é obrigatória';
-        isValid = false;
-      } else if (this.registerForm.password.length < 8) {
-        this.registerErrors.password = 'A senha deve ter pelo menos 8 caracteres';
-        isValid = false;
-      } else if (!this.validatePassword(this.registerForm.password)) {
-        this.registerErrors.password = 'A senha deve conter letras e números';
-        isValid = false;
-      }
-
-      if (!this.registerForm.confirmPassword) {
-        this.registerErrors.confirmPassword = 'Por favor, confirme sua senha';
-        isValid = false;
-      } else if (this.registerForm.password !== this.registerForm.confirmPassword) {
-        this.registerErrors.confirmPassword = 'As senhas não coincidem';
-        isValid = false;
-      }
-
-      if (!this.registerForm.agreeTerms) {
-        this.registerErrors.agreeTerms = 'Você deve concordar com os termos de serviço';
-        isValid = false;
-      }
-
-      if (!isValid) return;
-
-      // Submit form
       this.registerLoading = true;
+      try {
+        await axios.post('http://localhost:3000/usuarios', {
+          nome: this.registerForm.nome,
+          email: this.registerForm.email,
+          cpf: this.registerForm.cpf,
+          tipouser: this.registerForm.tipouser,
+          senha: this.registerForm.senha
+        });
 
-      // Simulate API call
-      setTimeout(() => {
+        Swal.fire({
+          icon: 'success',
+          title: 'Cadastro realizado!',
+          text: 'Você será redirecionado para a tela de login.',
+          timer: 3000,
+          showConfirmButton: false
+        }).then(() => {
+          location.reload();
+        });
+      } catch (error) {
+        console.error('Erro ao cadastrar:', error);
+        Swal.fire({
+          icon: 'error',
+          title: 'Erro no cadastro',
+          text: 'Não foi possível realizar o cadastro. Tente novamente mais tarde.',
+          confirmButtonColor: '#dc3545'
+        });
+      } finally {
         this.registerLoading = false;
-
-        // Show success message
-        this.successModalTitle = 'Cadastro realizado com sucesso';
-        this.successModalMessage = 'Enviamos um email de confirmação para ' + this.registerForm.email;
-        this.showSuccessModal = true;
-
-        // Switch to login tab after 2 seconds
-        setTimeout(() => {
-          this.activeTab = 'login';
-        }, 2000);
-      }, 1500);
-    },
-    validateEmail(email) {
-      const re = /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
-      return re.test(String(email).toLowerCase());
-    },
-
-    validatePassword(password) {
-      // Password must contain at least one letter and one number
-      return /[A-Za-z]/.test(password) && /[0-9]/.test(password);
+      }
     }
   }
 }

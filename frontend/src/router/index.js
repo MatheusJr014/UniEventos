@@ -4,8 +4,8 @@ import EventoView from "@/views/EventoView.vue";
 import AdminView from "@/views/AdminView.vue";
 import UsuarioView from "@/views/UsuarioView.vue";
 import EventosListView from "@/views/EventosListView.vue";
-import GuardAdmin from '../middleware/AuthAdmin'; 
-import GuardUser from '../middleware/AuthUser'; 
+import GuardAdmin from '../services/middleware/AuthAdmin'; 
+import GuardUser from '../services/middleware/AuthUser'; 
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
