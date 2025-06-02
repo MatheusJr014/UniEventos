@@ -393,79 +393,55 @@
               <!-- Grid View -->
               <div v-if="viewMode === 'grid'" class="row g-4">
                 <div
-                  v-for="(event, index) in paginatedEvents"
-                  :key="index"
+                  v-for="event in paginatedEvents"
+                  :key="event.id"
                   class="col-md-6 col-lg-4"
                 >
                   <div class="card h-100 border-0 shadow-sm hover-card">
                     <div class="position-relative">
                       <img
-                        :src="event.image"
-                        :alt="event.name"
+                        :src="
+                          event.imagemevento || 'https://placehold.co/600x400'
+                        "
+                        :alt="event.nomeevento"
                         class="card-img-top"
                       />
                       <span
                         class="position-absolute top-0 end-0 badge bg-primary m-2"
-                        >{{ event.category }}</span
                       >
-                      <button
-                        class="btn btn-sm btn-light position-absolute top-0 start-0 m-2 rounded-circle"
-                        title="Adicionar aos favoritos"
-                      >
-                        <i
-                          class="bi"
-                          :class="
-                            event.isFavorite
-                              ? 'bi-heart-fill text-danger'
-                              : 'bi-heart'
-                          "
-                        ></i>
-                      </button>
+                        {{ event.categoria }}
+                      </span>
                     </div>
                     <div class="card-body">
-                      <h5 class="card-title">{{ event.name }}</h5>
+                      <h5 class="card-title">{{ event.nomeevento }}</h5>
                       <div
                         class="d-flex align-items-center text-muted mb-2 small"
                       >
                         <i class="bi bi-calendar-event me-2"></i>
-                        <span>{{ event.date }}</span>
+                        <span>{{ formatDate(event.datainicio) }}</span>
                       </div>
                       <div
                         class="d-flex align-items-center text-muted mb-2 small"
                       >
                         <i class="bi bi-geo-alt me-2"></i>
-                        <span>{{ event.location }}</span>
-                      </div>
-                      <div
-                        class="d-flex align-items-center text-muted mb-3 small"
-                      >
-                        <i
-                          class="bi"
-                          :class="
-                            event.format === 'online'
-                              ? 'bi-laptop me-2'
-                              : 'bi-pin-map me-2'
-                          "
-                        ></i>
-                        <span>{{
-                          event.format === "online" ? "Online" : "Presencial"
-                        }}</span>
+                        <span>{{ event.local }}</span>
                       </div>
                       <div
                         class="d-flex justify-content-between align-items-center"
                       >
                         <div class="fw-bold">
                           {{
-                            event.price === 0
-                              ? "Grátis"
-                              : `R$ ${event.price.toFixed(2)}`
+                            event.ingressos.length > 0
+                              ? `A partir de R$ ${event.precoMinimo.toFixed(2)}`
+                              : "Grátis"
                           }}
                         </div>
                         <a
                           :href="`/evento/${event.id}`"
                           class="btn btn-sm btn-primary"
-                          >Ver Detalhes</a
                         >
+                          Ver Detalhes
+                        </a>
                       </div>
                     </div>
                   </div>
@@ -476,21 +452,31 @@
               <div v-if="viewMode === 'list'" class="card border-0 shadow-sm">
                 <div class="list-group list-group-flush">
                   <div
-                    v-for="(event, index) in paginatedEvents"
-                    :key="index"
+                    v-for="event in paginatedEvents"
+                    :key="event.id"
                     class="list-group-item p-3"
                   >
                     <div class="row g-3 align-items-center">
+                      <!-- Coluna da Imagem -->
                       <div class="col-md-3">
                         <div class="position-relative">
                           <img
-                            :src="event.image"
-                            :alt="event.name"
+                            :src="
+                              event.imagemevento ||
+                              'https://placehold.co/600x400'
+                            "
+                            :alt="event.nomeevento"
                             class="img-fluid rounded"
+                            style="
+                              height: 150px;
+                              object-fit: cover;
+                              width: 100%;
+                            "
                           />
                           <button
                             class="btn btn-sm btn-light position-absolute top-0 start-0 m-2 rounded-circle"
                             title="Adicionar aos favoritos"
+                            @click="toggleFavorite(event.id)"
                           >
                             <i
                               class="bi"
@@ -503,48 +489,68 @@
                           </button>
                         </div>
                       </div>
+
+                      <!-- Coluna de Informações -->
                       <div class="col-md-6">
                         <span class="badge bg-primary mb-2">{{
-                          event.category
+                          event.categoria
                         }}</span>
-                        <h5 class="mb-1">{{ event.name }}</h5>
+                        <h5 class="mb-1">{{ event.nomeevento }}</h5>
+                        <p class="text-muted small mb-2">
+                          {{ event.descricao.substring(0, 100) }}...
+                        </p>
+
                         <div
                           class="d-flex align-items-center text-muted mb-2 small"
                         >
                           <i class="bi bi-calendar-event me-2"></i>
-                          <span>{{ event.date }}</span>
+                          <span>
+                            {{ formatDate(event.datainicio) }}
+                            <span v-if="event.datafim !== event.datainicio">
+                              - {{ formatDate(event.datafim) }}
+                            </span>
+                          </span>
                         </div>
+
                         <div
                           class="d-flex align-items-center text-muted mb-2 small"
                         >
-                          <i class="bi bi-geo-alt me-2"></i>
-                          <span>{{ event.location }}</span>
+                          <i class="bi bi-clock me-2"></i>
+                          <span
+                            >{{ formatTime(event.horainicio) }} -
+                            {{ formatTime(event.horafim) }}</span
+                          >
                         </div>
+
                         <div class="d-flex align-items-center text-muted small">
-                          <i
-                            class="bi"
-                            :class="
-                              event.format === 'online'
-                                ? 'bi-laptop me-2'
-                                : 'bi-pin-map me-2'
-                            "
-                          ></i>
-                          <span>{{
-                            event.format === "online" ? "Online" : "Presencial"
-                          }}</span>
+                          <i class="bi bi-geo-alt me-2"></i>
+                          <span>{{ event.local }}</span>
                         </div>
                       </div>
+
+                      <!-- Coluna de Preço e Botão -->
                       <div class="col-md-3 text-md-end">
-                        <div class="fw-bold mb-3">
+                        <div class="fw-bold mb-3 text-center">
                           {{
-                            event.price === 0
-                              ? "Grátis"
-                              : `R$ ${event.price.toFixed(2)}`
+                            event.ingressos.length > 0
+                              ? `A partir de R$ ${event.precoMinimo.toFixed(2)}`
+                              : "Grátis"
                           }}
                         </div>
-                        <a :href="`/evento/${event.id}`" class="btn btn-primary"
-                          >Ver Detalhes</a
-                        >
+                        <div class="d-flex flex-column gap-2">
+                          <span
+                            class="badge bg-success"
+                            v-if="event.status === 'ativo'"
+                          >
+                            Disponível
+                          </span>
+                          <a
+                            :href="'/evento/' + event.id"
+                            class="btn btn-primary btn-sm"
+                          >
+                            Ver Detalhes
+                          </a>
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -552,22 +558,41 @@
               </div>
 
               <!-- Map View -->
-              <div
-                v-if="viewMode === 'map'"
-                class="card border-0 shadow-sm mb-4"
-              >
-                <div class="card-body p-0">
-                  <div class="ratio ratio-21x9">
-                    <iframe
-                      src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3657.1975874201203!2d-46.65429492549636!3d-23.56410237882275!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x94ce59c8da0aa315%3A0xd59f9431f2c9776a!2sAv.%20Paulista%20-%20Bela%20Vista%2C%20S%C3%A3o%20Paulo%20-%20SP!5e0!3m2!1sen!2sbr!4v1682599231978!5m2!1sen!2sbr"
-                      width="600"
-                      height="450"
-                      style="border: 0"
-                      allowfullscreen=""
-                      loading="lazy"
-                      referrerpolicy="no-referrer-when-downgrade"
-                    >
-                    </iframe>
+              <div v-if="viewMode === 'map'" class="row g-4 mt-4">
+                <div
+                  v-for="event in paginatedEvents"
+                  :key="event.id"
+                  class="col-md-6"
+                >
+                  <div class="card h-100 border-0 shadow-sm hover-card">
+                    <div class="row g-0">
+                      <div class="col-4">
+                        <img
+                          :src="
+                            event.imagemevento || 'https://placehold.co/600x400'
+                          "
+                          class="img-fluid rounded-start h-100"
+                          style="object-fit: cover"
+                        />
+                      </div>
+                      <div class="col-8">
+                        <div class="card-body">
+                          <h6 class="card-title">{{ event.nomeevento }}</h6>
+                          <div
+                            class="d-flex align-items-center text-muted mb-2 small"
+                          >
+                            <i class="bi bi-calendar-event me-2"></i>
+                            <span>{{ formatDate(event.datainicio) }}</span>
+                          </div>
+                          <div
+                            class="d-flex align-items-center text-muted mb-2 small"
+                          >
+                            <i class="bi bi-geo-alt me-2"></i>
+                            <span>{{ event.local }}</span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -619,14 +644,14 @@
               </div>
 
               <!-- No Results -->
-              <div v-if="filteredEvents.length === 0" class="text-center py-5">
+              <div
+                v-if="!isLoading && events.length === 0"
+                class="text-center py-5"
+              >
                 <i class="bi bi-calendar-x text-muted fs-1"></i>
-                <h3 class="h5 mt-3">Nenhum evento encontrado</h3>
-                <p class="text-muted">
-                  Tente ajustar seus filtros ou buscar por outros termos.
-                </p>
-                <button class="btn btn-primary" @click="resetFilters">
-                  Limpar Filtros
+                <h3 class="h5 mt-3">Nenhum evento disponível no momento</h3>
+                <button @click="fetchEvents" class="btn btn-primary mt-2">
+                  Recarregar eventos
                 </button>
               </div>
 
@@ -904,278 +929,91 @@ export default {
         "Recife",
         "Porto Alegre",
       ],
-      events: [
-        {
-          id: 1,
-          name: "Festival de Música Verão 2023",
-          date: "15-17 Dez 2023",
-          location: "Praia de Copacabana, Rio de Janeiro",
-          price: 150.0,
-          category: "Festival",
-          format: "presential",
-          image: "https://placehold.co/600x400",
-          isFavorite: false,
-        },
-        {
-          id: 2,
-          name: "Show de Rock Nacional",
-          date: "22 Nov 2023",
-          location: "Arena Multiuso, São Paulo",
-          price: 90.0,
-          category: "Show",
-          format: "presential",
-          image: "https://placehold.co/600x400",
-          isFavorite: true,
-        },
-        {
-          id: 3,
-          name: "Conferência de Tecnologia",
-          date: "5-7 Dez 2023",
-          location: "Centro de Convenções, Belo Horizonte",
-          price: 200.0,
-          category: "Conferência",
-          format: "presential",
-          image: "https://placehold.co/600x400",
-          isFavorite: false,
-        },
-        {
-          id: 4,
-          name: "Peça de Teatro: O Fantasma da Ópera",
-          date: "10 Dez 2023",
-          location: "Teatro Municipal, São Paulo",
-          price: 120.0,
-          category: "Teatro",
-          format: "presential",
-          image: "https://placehold.co/600x400",
-          isFavorite: false,
-        },
-        {
-          id: 5,
-          name: "Workshop de Fotografia",
-          date: "18 Nov 2023",
-          location: "Galeria de Arte, Curitiba",
-          price: 50.0,
-          category: "Workshop",
-          format: "presential",
-          image: "https://placehold.co/600x400",
-          isFavorite: false,
-        },
-        {
-          id: 6,
-          name: "Campeonato de Futebol Amador",
-          date: "25-26 Nov 2023",
-          location: "Estádio Municipal, Salvador",
-          price: 0,
-          category: "Esporte",
-          format: "presential",
-          image: "https://placehold.co/600x400",
-          isFavorite: false,
-        },
-        {
-          id: 7,
-          name: "Festival de Jazz",
-          date: "10-12 Jan 2024",
-          location: "Parque da Cidade, Brasília",
-          price: 120.0,
-          category: "Festival",
-          format: "presential",
-          image: "https://placehold.co/600x400",
-          isFavorite: false,
-        },
-        {
-          id: 8,
-          name: "Feira Gastronômica",
-          date: "3-5 Dez 2023",
-          location: "Parque Ibirapuera, São Paulo",
-          price: 0,
-          category: "Feira",
-          format: "presential",
-          image: "https://placehold.co/600x400",
-          isFavorite: true,
-        },
-        {
-          id: 9,
-          name: "Exposição de Arte Moderna",
-          date: "15 Dez 2023 - 15 Jan 2024",
-          location: "Museu de Arte, Rio de Janeiro",
-          price: 30.0,
-          category: "Exposição",
-          format: "presential",
-          image: "https://placehold.co/600x400",
-          isFavorite: false,
-        },
-        {
-          id: 10,
-          name: "Webinar: Marketing Digital",
-          date: "12 Dez 2023",
-          location: "Online",
-          price: 0,
-          category: "Conferência",
-          format: "online",
-          image: "https://placehold.co/600x400",
-          isFavorite: false,
-        },
-        {
-          id: 11,
-          name: "Curso de Culinária Italiana",
-          date: "20 Nov 2023",
-          location: "Online",
-          price: 80.0,
-          category: "Workshop",
-          format: "online",
-          image: "https://placehold.co/600x400",
-          isFavorite: false,
-        },
-        {
-          id: 12,
-          name: "Show de Stand-up Comedy",
-          date: "30 Nov 2023",
-          location: "Teatro Brasil, São Paulo",
-          price: 60.0,
-          category: "Show",
-          format: "presential",
-          image: "https://placehold.co/600x400",
-          isFavorite: false,
-        },
-        {
-          id: 13,
-          name: "Corrida Beneficente",
-          date: "3 Dez 2023",
-          location: "Parque do Ibirapuera, São Paulo",
-          price: 50.0,
-          category: "Esporte",
-          format: "presential",
-          image: "https://placehold.co/600x400",
-          isFavorite: false,
-        },
-        {
-          id: 14,
-          name: "Festival de Cinema Independente",
-          date: "8-10 Dez 2023",
-          location: "Cine Joia, São Paulo",
-          price: 40.0,
-          category: "Festival",
-          format: "presential",
-          image: "https://placehold.co/600x400",
-          isFavorite: false,
-        },
-        {
-          id: 15,
-          name: "Palestra: Finanças Pessoais",
-          date: "15 Nov 2023",
-          location: "Online",
-          price: 0,
-          category: "Conferência",
-          format: "online",
-          image: "https://placehold.co/600x400",
-          isFavorite: false,
-        },
-      ],
+      events: [],
     };
   },
   computed: {
     filteredEvents() {
-      let result = [...this.events];
+      // Filtra eventos vazios e mantém apenas ativos
+      let result = this.events.filter(
+        (event) => event.nomeevento && event.status === "ativo"
+      );
 
-      // Filter by search query
+      // Filtro por texto de busca
       if (this.searchQuery) {
         const query = this.searchQuery.toLowerCase();
         result = result.filter(
           (event) =>
-            event.name.toLowerCase().includes(query) ||
-            event.category.toLowerCase().includes(query) ||
-            event.location.toLowerCase().includes(query)
+            event.nomeevento.toLowerCase().includes(query) ||
+            (event.descricao &&
+              event.descricao.toLowerCase().includes(query)) ||
+            event.local.toLowerCase().includes(query)
         );
       }
 
-      // Filter by location
+      // Filtro por localização
       if (this.selectedLocation) {
         result = result.filter((event) =>
-          event.location.includes(this.selectedLocation)
+          event.local.includes(this.selectedLocation)
         );
       }
 
-      // Filter by categories
+      // Filtro por categorias
       if (this.selectedCategories.length > 0) {
         result = result.filter((event) =>
           this.selectedCategories.some(
             (cat) =>
-              event.category.toLowerCase() === cat.toLowerCase() ||
-              this.categories.find((c) => c.id === cat)?.name === event.category
+              event.categoria &&
+              event.categoria.toLowerCase() === cat.toLowerCase()
           )
         );
       }
 
-      // Filter by date
-      if (this.selectedDate) {
+      // Filtro por data
+      if (this.selectedDate === "today") {
+        const today = new Date().toISOString().split("T")[0];
+        result = result.filter((event) => event.datainicio === today);
+      } else if (this.selectedDate === "weekend") {
         const today = new Date();
-        const weekend = new Date();
-        weekend.setDate(today.getDate() + (6 - today.getDay()));
+        const day = today.getDay();
+        const diff = today.getDate() - day + (day === 0 ? -6 : 1); // Ajuste para domingo
+        const weekendStart = new Date(today.setDate(diff + 5)); // Sábado
+        const weekendEnd = new Date(today.setDate(diff + 7)); // Domingo
 
-        const endOfWeek = new Date();
-        endOfWeek.setDate(today.getDate() + (7 - today.getDay()));
-
-        const endOfMonth = new Date(
-          today.getFullYear(),
-          today.getMonth() + 1,
-          0
-        );
-
-        switch (this.selectedDate) {
-          case "today":
-            // Simple simulation for demo purposes
-            result = result.filter((event) => event.id % 5 === 0);
-            break;
-          case "weekend":
-            // Simple simulation for demo purposes
-            result = result.filter((event) => event.id % 3 === 0);
-            break;
-          case "week":
-            // Simple simulation for demo purposes
-            result = result.filter((event) => event.id % 2 === 0);
-            break;
-          case "month":
-            // All events are within the month for this demo
-            break;
-        }
+        result = result.filter((event) => {
+          const eventDate = new Date(event.datainicio);
+          return eventDate >= weekendStart && eventDate <= weekendEnd;
+        });
       } else if (this.startDate && this.endDate) {
-        // Custom date range would be implemented here
-        // For demo, we'll just filter some events
-        result = result.filter((event) => event.id % 4 !== 0);
+        result = result.filter(
+          (event) =>
+            event.datainicio >= this.startDate && event.datafim <= this.endDate
+        );
       }
 
-      // Filter by price
-      if (this.showFreeEvents) {
-        result = result.filter((event) => event.price === 0);
-      } else {
-        result = result.filter((event) => event.price <= this.priceRange);
-      }
-
-      // Filter by format
-      if (this.selectedFormat) {
-        result = result.filter((event) => event.format === this.selectedFormat);
-      }
-
-      // Sort events
+      // Ordenação
       switch (this.sortBy) {
         case "date":
-          // Simple simulation for demo purposes
-          result.sort((a, b) => a.id - b.id);
-          break;
-        case "price_asc":
-          result.sort((a, b) => a.price - b.price);
-          break;
-        case "price_desc":
-          result.sort((a, b) => b.price - a.price);
+          result.sort(
+            (a, b) => new Date(a.datainicio) - new Date(b.datainicio)
+          );
           break;
         case "name":
-          result.sort((a, b) => a.name.localeCompare(b.name));
+          result.sort((a, b) => a.nomeevento.localeCompare(b.nomeevento));
+          break;
+        case "relevance":
+        case "name":
+          result.sort((a, b) => a.nomeevento.localeCompare(b.nomeevento));
+          break;
+        case "price_asc":
+          result.sort((a, b) => a.precoMinimo - b.precoMinimo);
+          break;
+        case "price_desc":
+          result.sort((a, b) => b.precoMinimo - a.precoMinimo);
           break;
         case "relevance":
         default:
-          // Default sorting (by relevance) - for demo we'll sort by ID
           result.sort((a, b) => a.id - b.id);
-          break;
       }
 
       return result;
@@ -1276,6 +1114,84 @@ export default {
 
       return description || "Todos os eventos";
     },
+
+    async fetchEvents() {
+      this.isLoading = true;
+      try {
+        const response = await fetch("http://localhost:3000/eventos");
+        console.log("🚀 ~ fetchEvents ~ response:", response);
+        if (!response.ok) throw new Error("Erro ao carregar eventos");
+
+        this.events = await response.json();
+        console.log("🚀 ~ fetchEvents ~ this.events:", this.events);
+        this.error = null;
+      } catch (err) {
+        console.error("Erro na API:", err);
+        this.error = "Não foi possível carregar os eventos";
+      } finally {
+        this.isLoading = false;
+      }
+    },
+    async fetchEvents() {
+      this.isLoading = true;
+      try {
+        // Busca eventos
+        const eventsResponse = await fetch("http://localhost:3000/eventos");
+        if (!eventsResponse.ok) throw new Error("Erro ao carregar eventos");
+        const eventos = await eventsResponse.json();
+
+        // Busca ingressos
+        const ingressosResponse = await fetch(
+          "http://localhost:3000/ingressos"
+        );
+        if (!ingressosResponse.ok)
+          throw new Error("Erro ao carregar ingressos");
+        const ingressos = await ingressosResponse.json();
+
+        // Combina os dados
+        this.events = eventos.map((evento) => {
+          const ingressosDoEvento = ingressos.filter(
+            (ingresso) => ingresso.EventoId === evento.id
+          );
+          return {
+            ...evento,
+            ingressos: ingressosDoEvento,
+            precoMinimo:
+              ingressosDoEvento.length > 0
+                ? Math.min(...ingressosDoEvento.map((i) => parseFloat(i.preco)))
+                : 0,
+          };
+        });
+
+        this.error = null;
+      } catch (err) {
+        console.error("Erro na API:", err);
+        this.error = "Não foi possível carregar os dados";
+      } finally {
+        this.isLoading = false;
+      }
+    },
+    // toggleFavorite(eventId) {
+    //   const event = this.events.find((e) => e.id === eventId);
+    //   if (event) {
+    //     event.isFavorite = !event.isFavorite;
+    //   }
+    // },
+
+    formatDate(dateString) {
+      const options = { day: "2-digit", month: "long", year: "numeric" };
+      return new Date(dateString).toLocaleDateString("pt-BR", options);
+    },
+
+    formatTime(timeString) {
+      return timeString.substring(0, 5); // Formata para HH:MM
+    },
+    formatPrice(price) {
+      return parseFloat(price).toFixed(2).replace(".", ",");
+    },
+  },
+  created() {
+    this.fetchEvents();
   },
 };
 </script>
