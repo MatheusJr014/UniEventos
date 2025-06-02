@@ -1,7 +1,7 @@
 <template>
   <div>
     <!-- Header -->
-    <EventHeader />
+    <NavBarComponents />
 
     <main>
       <!-- Breadcrumb -->
@@ -195,14 +195,14 @@
 
 <script>
 import RelatedEvents from "@/components/Publico/Evento Details/RelatedEventsComponents.vue";
-import EventHeader from "@/components/Publico/Evento Details/HeaderEventComponents.vue";
+import NavBarComponents from "@/components/Publico/NavBarComponents.vue";
 import EventFooter from "@/components/Publico/Evento Details/FooterEventComponents.vue";
 import SideBarEvent from "@/components/Publico/Evento Details/SideBarEventComponents.vue";
 
 export default {
   name: "EventoDetalhes",
   components: {
-    EventHeader,
+    NavBarComponents,
     RelatedEvents,
     EventFooter,
     SideBarEvent,

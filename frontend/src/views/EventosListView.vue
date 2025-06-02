@@ -1,7 +1,7 @@
 <template>
   <div>
     <!-- Header -->
-    <EventHeader />
+    <NavBarComponents />
     <main>
       <!-- Breadcrumb -->
       <div class="bg-light py-2">
@@ -885,12 +885,12 @@
 </template>
 
 <script>
-import EventHeader from "@/components/Publico/Evento Details/HeaderEventComponents.vue";
+import NavBarComponents from "@/components/Publico/NavBarComponents.vue";
 
 export default {
   name: "ListagemEventos",
   components: {
-    EventHeader,
+    NavBarComponents,
   },
   data() {
     return {
