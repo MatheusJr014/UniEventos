@@ -16,23 +16,24 @@
           <div v-for="event in events" :key="event.id" class="col-md-6 col-lg-4">
             <div class="card h-100 border-0 shadow-sm hover-card">
               <div class="position-relative">
-                <img :src="event.image" :alt="event.title" class="card-img-top">
-                <span class="position-absolute top-0 end-0 badge bg-primary m-2">{{ event.category
+                <img :src="event.imagemevento" :alt="event.nomeevento" class="card-img-top">
+                <span class="position-absolute top-0 end-0 badge bg-primary m-2">{{ event.categoria
                 }}</span>
               </div>
               <div class="card-body">
-                <h5 class="card-title fw-bold">{{ event.title }}</h5>
+                <h5 class="card-title fw-bold">{{ event.nomeevento }}</h5>
                 <div class="d-flex align-items-center text-muted mb-2">
                   <i class="bi bi-calendar-event me-2"></i>
-                  <span>{{ event.date }}</span>
+                  <span>{{ event.datafim }}</span>
                 </div>
                 <div class="d-flex align-items-center text-muted mb-3">
                   <i class="bi bi-geo-alt me-2"></i>
-                  <span>{{ event.location }}</span>
+                  <span>{{ event.datafim }}</span>
                 </div>
                 <div class="d-flex justify-content-between align-items-center">
-                  <div class="fw-bold">{{ event.price === 0 ? 'Grátis' : `R$
-                    ${event.price.toFixed(2)}` }}</div>
+                  <div class="fw-bold">{{`R$0,0`}}</div>
+                  <!-- <div class="fw-bold">{{ event.price === 0 ? 'Grátis' : `R$
+                    ${event.price.toFixed(2)}` }}</div> -->
                   <a href="#" class="btn btn-sm btn-secondary">Comprar</a>
                 </div>
               </div>
@@ -57,62 +58,7 @@ export default {
         { name: "Workshops", icon: "bi-calendar-event" },
         { name: "Conferências", icon: "bi-mic-fill" },
       ],
-      events: [
-        {
-          id: 1,
-          title: "Festival de Música Verão 2023",
-          date: "15-17 Dez 2023",
-          location: "Praia de Copacabana, Rio de Janeiro",
-          price: 150.0,
-          category: "Festival",
-          image: "https://placehold.co/600x400",
-        },
-        {
-          id: 2,
-          title: "Show de Rock Nacional",
-          date: "22 Nov 2023",
-          location: "Arena Multiuso, São Paulo",
-          price: 90.0,
-          category: "Show",
-          image: "https://placehold.co/600x400",
-        },
-        {
-          id: 3,
-          title: "Conferência de Tecnologia",
-          date: "5-7 Dez 2023",
-          location: "Centro de Convenções, Belo Horizonte",
-          price: 200.0,
-          category: "Conferência",
-          image: "https://placehold.co/600x400",
-        },
-        {
-          id: 4,
-          title: "Peça de Teatro: O Fantasma da Ópera",
-          date: "10 Dez 2023",
-          location: "Teatro Municipal, São Paulo",
-          price: 120.0,
-          category: "Teatro",
-          image: "https://placehold.co/600x400",
-        },
-        {
-          id: 5,
-          title: "Workshop de Fotografia",
-          date: "18 Nov 2023",
-          location: "Galeria de Arte, Curitiba",
-          price: 50.0,
-          category: "Workshop",
-          image: "https://placehold.co/600x400",
-        },
-        {
-          id: 6,
-          title: "Campeonato de Futebol Amador",
-          date: "25-26 Nov 2023",
-          location: "Estádio Municipal, Salvador",
-          price: 0,
-          category: "Esporte",
-          image: "https://placehold.co/600x400",
-        },
-      ],
+      events: [],
       steps: [
         {
           title: "Encontre eventos",
@@ -145,6 +91,65 @@ export default {
         },
       ],
     };
+  },
+  methods: {
+     async fetchEvents() {
+      this.isLoading = true;
+      try {
+        const eventsResponse = await fetch("http://localhost:3000/eventos");
+        if (!eventsResponse.ok) throw new Error("Erro ao carregar eventos");
+        const eventos = await eventsResponse.json();
+
+        const ingressosResponse = await fetch(
+          "http://localhost:3000/ingressos"
+        );
+        if (!ingressosResponse.ok)
+          throw new Error("Erro ao carregar ingressos");
+        const ingressos = await ingressosResponse.json();
+
+        this.events = eventos.map((evento) => {
+          const ingressosDoEvento = ingressos.filter(
+            (ingresso) => ingresso.EventoId === evento.id
+          );
+          return {
+            ...evento,
+            ingressos: ingressosDoEvento,
+            precoMinimo:
+              ingressosDoEvento.length > 0
+                ? Math.min(...ingressosDoEvento.map((i) => parseFloat(i.preco)))
+                : 0,
+          };
+        });
+
+        this.error = null;
+      } catch (err) {
+        console.error("Erro na API:", err);
+        this.error = "Não foi possível carregar os dados";
+      } finally {
+        this.isLoading = false;
+      }
+    },
+    // toggleFavorite(eventId) {
+    //   const event = this.events.find((e) => e.id === eventId);
+    //   if (event) {
+    //     event.isFavorite = !event.isFavorite;
+    //   }
+    // },
+
+    formatDate(dateString) {
+      const options = { day: "2-digit", month: "long", year: "numeric" };
+      return new Date(dateString).toLocaleDateString("pt-BR", options);
+    },
+
+    formatTime(timeString) {
+      return timeString.substring(0, 5);
+    },
+    formatPrice(price) {
+      return parseFloat(price).toFixed(2).replace(".", ",");
+    },
+  },
+  created() {
+    this.fetchEvents();
   },
 };
 </script>

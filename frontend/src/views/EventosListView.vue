@@ -1118,29 +1118,10 @@ export default {
     async fetchEvents() {
       this.isLoading = true;
       try {
-        const response = await fetch("http://localhost:3000/eventos");
-        console.log("🚀 ~ fetchEvents ~ response:", response);
-        if (!response.ok) throw new Error("Erro ao carregar eventos");
-
-        this.events = await response.json();
-        console.log("🚀 ~ fetchEvents ~ this.events:", this.events);
-        this.error = null;
-      } catch (err) {
-        console.error("Erro na API:", err);
-        this.error = "Não foi possível carregar os eventos";
-      } finally {
-        this.isLoading = false;
-      }
-    },
-    async fetchEvents() {
-      this.isLoading = true;
-      try {
-        // Busca eventos
         const eventsResponse = await fetch("http://localhost:3000/eventos");
         if (!eventsResponse.ok) throw new Error("Erro ao carregar eventos");
         const eventos = await eventsResponse.json();
 
-        // Busca ingressos
         const ingressosResponse = await fetch(
           "http://localhost:3000/ingressos"
         );
@@ -1148,7 +1129,6 @@ export default {
           throw new Error("Erro ao carregar ingressos");
         const ingressos = await ingressosResponse.json();
 
-        // Combina os dados
         this.events = eventos.map((evento) => {
           const ingressosDoEvento = ingressos.filter(
             (ingresso) => ingresso.EventoId === evento.id
@@ -1184,7 +1164,7 @@ export default {
     },
 
     formatTime(timeString) {
-      return timeString.substring(0, 5); // Formata para HH:MM
+      return timeString.substring(0, 5);
     },
     formatPrice(price) {
       return parseFloat(price).toFixed(2).replace(".", ",");
