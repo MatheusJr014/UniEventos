@@ -46,7 +46,7 @@ const router = createRouter({
     {
       path: '/teste/',
       name: 'teste', 
-      component: ()=>import('../components/loginEcadastro/MainComponent.vue')
+      component: ()=>import('../components/User/UserComponent.vue')
     }
   ],
 });
