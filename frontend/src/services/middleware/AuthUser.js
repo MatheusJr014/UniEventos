@@ -1,12 +1,12 @@
 export default {
     authUser(to, from, next) {
-        const usertoken = localStorage.getItem('usertoken'); 
+        const token = localStorage.getItem('token'); 
         
-        if (!usertoken) {
-            console.log('Token não encontrado:', usertoken); // Verificar se o token está undefined
-            next('/login/professor'); // Redirecionar para login
+        if (!token) {
+            console.log('Token não encontrado:', token); // Verificar se o token está undefined
+            next('/login/'); // Redirecionar para login
         } else {
-            console.log('Token encontrado:', usertoken); // Token encontrado, pode prosseguir
+            console.log('Token encontrado:', token); // Token encontrado, pode prosseguir
             next(); // Permitir navegação
         }
     }

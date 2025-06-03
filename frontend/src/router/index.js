@@ -29,8 +29,9 @@ const router = createRouter({
       component: AdminView
     },
     {
-      path: '/perfil/usuario',
+      path: '/perfil/',
       name: 'usuario',
+      beforeEnter: GuardUser.authUser,
       component: UsuarioView
     },
     {
