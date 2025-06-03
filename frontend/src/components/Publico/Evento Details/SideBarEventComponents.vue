@@ -108,7 +108,7 @@ export default {
     async fetchTickets() {
       try {
         this.loading = true;
-        const response = await fetch(`http://localhost:3000/ingressos?eventoId=${this.eventId}`);
+        const response = await fetch(`http://localhost:3000/ingressos?EventoId=${this.eventId}`);
         if (!response.ok) throw new Error('Erro ao carregar ingressos');
         
         const data = await response.json();
