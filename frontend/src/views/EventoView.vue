@@ -115,17 +115,6 @@
                 <div class="card-body">
                   <h3 class="h5 fw-bold mb-3">Sobre o Evento</h3>
                   <div class="mb-4" v-html="evento.descricao"></div>
-
-                  <!-- <h3 class="h5 fw-bold mb-3">Informações Importantes</h3>
-                  <ul class="mb-0">
-                    <li
-                      v-for="(info, index) in evento.importantInfo"
-                      :key="index"
-                      class="mb-2"
-                    >
-                      {{ info }}
-                    </li>
-                  </ul> -->
                 </div>
               </div>
 
@@ -252,7 +241,6 @@ export default {
 
       this.evento = await response.json();
 
-      // Adicione tratamento especial para datas
       this.evento.fullDate = this.formatDateRange(
         this.evento.datainicio,
         this.evento.datafim
@@ -265,28 +253,6 @@ export default {
     }
   },
   methods: {
-    // incrementTicket(index) {
-    //   if (this.evento.tickets[index].available) {
-    //     this.evento.tickets[index].quantity++;
-    //   }
-    // },
-    // decrementTicket(index) {
-    //   if (this.evento.tickets[index].quantity > 0) {
-    //     this.evento.tickets[index].quantity--;
-    //   }
-    // },
-    // calculateSubtotal() {
-    //   return this.evento.tickets.reduce((total, ticket) => {
-    //     return total + ticket.price * ticket.quantity;
-    //   }, 0);
-    // },
-    // calculateServiceFee() {
-    //   // 10% de taxa de serviço
-    //   return this.calculateSubtotal() * 0.1;
-    // },
-    // calculateTotal() {
-    //   return this.calculateSubtotal() + this.calculateServiceFee();
-    // },
     formatDate(dateString) {
       const options = { day: "2-digit", month: "long", year: "numeric" };
       return new Date(dateString).toLocaleDateString("pt-BR", options);
