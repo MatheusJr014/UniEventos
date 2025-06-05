@@ -13,7 +13,7 @@ module.exports = (sequelize) => {
     categoria: DataTypes.STRING,
     quantidadeingresso: DataTypes.INTEGER,
     //OrganizadoID(UsuarioID PK ) definir no indexJS 
-    status: DataTypes.STRING
-
+    status: DataTypes.STRING,
+    OrganizadorId: DataTypes.INTEGER
   });
 };

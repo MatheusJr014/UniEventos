@@ -751,6 +751,10 @@
   
   <script>
   import axios from 'axios';
+  import { jwtDecode } from 'jwt-decode';
+  const token = localStorage.getItem('token');
+  const decoded = jwtDecode(token);
+  const organizadorId = decoded.id
   export default {
     name: 'AdminPainel',
     data() {
@@ -810,41 +814,42 @@
   },
     methods: {
       async fetchEvents() {
-      this.isLoading = true;
-      try {
-        const eventsResponse = await fetch("http://localhost:3000/eventos");
-        if (!eventsResponse.ok) throw new Error("Erro ao carregar eventos");
-        const eventos = await eventsResponse.json();
+        this.isLoading = true;
+        try {
+          const eventsResponse = await fetch(`http://localhost:3000/eventos?OrganizadorId=${organizadorId}`);
+          // const eventsResponse = await fetch("http://localhost:3000/eventos");
+          if (!eventsResponse.ok) throw new Error("Erro ao carregar eventos");
+          const eventos = await eventsResponse.json();
 
-        const ingressosResponse = await fetch(
-          "http://localhost:3000/ingressos"
-        );
-        if (!ingressosResponse.ok)
-          throw new Error("Erro ao carregar ingressos");
-        const ingressos = await ingressosResponse.json();
-
-        this.events = eventos.map((evento) => {
-          const ingressosDoEvento = ingressos.filter(
-            (ingresso) => ingresso.EventoId === evento.id
+          const ingressosResponse = await fetch(
+            "http://localhost:3000/ingressos"
           );
-          return {
-            ...evento,
-            ingressos: ingressosDoEvento,
-            precoMinimo:
-              ingressosDoEvento.length > 0
-                ? Math.min(...ingressosDoEvento.map((i) => parseFloat(i.preco)))
-                : 0,
-          };
-        });
+          if (!ingressosResponse.ok)
+            throw new Error("Erro ao carregar ingressos");
+          const ingressos = await ingressosResponse.json();
 
-        this.error = null;
-      } catch (err) {
-        console.error("Erro na API:", err);
-        this.error = "Não foi possível carregar os dados";
-      } finally {
-        this.isLoading = false;
-      }
-    },
+          this.events = eventos.map((evento) => {
+            const ingressosDoEvento = ingressos.filter(
+              (ingresso) => ingresso.EventoId === evento.id
+            );
+            return {
+              ...evento,
+              ingressos: ingressosDoEvento,
+              precoMinimo:
+                ingressosDoEvento.length > 0
+                  ? Math.min(...ingressosDoEvento.map((i) => parseFloat(i.preco)))
+                  : 0,
+            };
+          });
+
+          this.error = null;
+        } catch (err) {
+          console.error("Erro na API:", err);
+          this.error = "Não foi possível carregar os dados";
+        } finally {
+          this.isLoading = false;
+        }
+      },
 
     formatDate(dateString) {
       const options = { day: "2-digit", month: "long", year: "numeric" };
@@ -918,7 +923,7 @@
         categoria: this.newEvent.categoria,
         quantidadeingresso: parseInt(this.newEvent.quantidadeingresso) || 0,
         status: this.newEvent.status,
-        organizadorId: parseInt(this.newEvent.organizadorId)
+        OrganizadorId: organizadorId
       };
 
       const response = await axios.post('http://localhost:3000/eventos', eventData);
