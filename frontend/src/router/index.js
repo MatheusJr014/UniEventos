@@ -23,7 +23,7 @@ const router = createRouter({
       props: true
     },
     {
-      path: '/admin',
+      path: '/admin/',
       name: 'admin',
       beforeEnter: GuardAdmin.authAdmin,
       component: AdminView
@@ -31,7 +31,7 @@ const router = createRouter({
     {
       path: '/perfil/',
       name: 'usuario',
-      beforeEnter: GuardUser.authUser,
+      beforeEnter: GuardAdmin.authUser,
       component: UsuarioView
     },
     {
@@ -47,7 +47,7 @@ const router = createRouter({
     {
       path: '/teste/',
       name: 'teste', 
-      component: ()=>import('../components/User/UserComponent.vue')
+      component: ()=>import('../components/admin/AdminComponent.vue')
     }
   ],
 });
