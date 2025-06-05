@@ -4,8 +4,8 @@
       <div class="sidebar" :class="{ 'sidebar-collapsed': sidebarCollapsed }">
         <div class="sidebar-header">
           <div class="logo-container">
-            <img v-if="!sidebarCollapsed" src="../assets/logo.svg" alt="Conecta Eventos Logo" height="100" class="logo">
-            <img v-else class="logo-small">
+            <img v-if="!sidebarCollapsed" src="../../assets/logo.svg" alt="Conecta Eventos Logo" height="100" class="logo">
+            <img v-else>
           </div>
           <button class="btn btn-sm btn-link text-primary sidebar-toggle" @click="toggleSidebar">
             <i class="bi" :class="sidebarCollapsed ? 'bi-chevron-right' : 'bi-chevron-left'"></i>
