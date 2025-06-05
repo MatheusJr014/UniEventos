@@ -8,7 +8,7 @@
             <h2 class="display-5 fw-bold">Eventos em Destaque</h2>
             <p class="text-muted">Não perca os eventos mais populares da temporada</p>
           </div>
-          <a href="#" class="text-decoration-none d-flex align-items-center text-secondary">
+          <a href="/lista/eventos" class="text-decoration-none d-flex align-items-center text-secondary">
             Ver todos <i class="bi bi-arrow-right ms-1"></i>
           </a>
         </div>

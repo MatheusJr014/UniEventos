@@ -228,9 +228,9 @@
                           </tr>
                         </thead>
                         <tbody>
-                          <tr v-for="(event, index) in recentEvents" :key="index">
-                            <td>{{ event.name }}</td>
-                            <td>{{ event.date }}</td>
+                          <tr v-for="(event, index) in filteredEvents" :key="index">
+                            <td>{{ event.nomeevento }}</td>
+                            <td>{{ event.datainicio }}</td>
                             <td>
                               <span class="badge" :class="getStatusBadgeClass(event.status)">
                                 {{ event.status }}
@@ -259,20 +259,6 @@
                             <th scope="col">Data de Cadastro</th>
                           </tr>
                         </thead>
-                        <tbody>
-                          <tr v-for="(user, index) in recentUsers" :key="index">
-                            <td>
-                              <div class="d-flex align-items-center">
-                                <div class="avatar me-2">
-                                  <img :src="user.avatar" alt="User Avatar" class="rounded-circle" width="32" height="32">
-                                </div>
-                                <div>{{ user.name }}</div>
-                              </div>
-                            </td>
-                            <td>{{ user.type }}</td>
-                            <td>{{ user.date }}</td>
-                          </tr>
-                        </tbody>
                       </table>
                     </div>
                   </div>
@@ -285,7 +271,7 @@
           <div v-if="activeMenuItem === 'events'">
             <div class="d-flex justify-content-between align-items-center mb-4">
               <h4 class="mb-0">Gerenciamento de Eventos</h4>
-              <button class="btn btn-primary" @click="showAddEventModal = true">
+              <button class="btn btn-primary" @click="openAddEventModal">
                 <i class="bi bi-plus-circle me-2"></i>Adicionar Evento
               </button>
             </div>
@@ -338,7 +324,6 @@
                           </div>
                         </th>
                         <th scope="col">Evento</th>
-                        <th scope="col">Organizador</th>
                         <th scope="col">Data</th>
                         <th scope="col">Categoria</th>
                         <th scope="col">Ingressos</th>
@@ -356,20 +341,24 @@
                         <td>
                           <div class="d-flex align-items-center">
                             <div class="event-image me-3">
-                              <img :src="event.image" :alt="event.name" class="rounded" width="60" height="40">
+                              <img :src="
+                              event.imagemevento ||
+                              'https://placehold.co/600x400'
+                            "
+                            :alt="event.nomeevento" class="rounded" width="60" height="40">
+                             
                             </div>
                             <div>
-                              <div class="fw-bold">{{ event.name }}</div>
+                              <div class="fw-bold">{{ event.nomeevento }}</div>
                               <div class="small text-muted">ID: {{ event.id }}</div>
                             </div>
                           </div>
                         </td>
-                        <td>{{ event.organizer }}</td>
-                        <td>{{ event.date }}</td>
+                        <td>{{ event.datainicio }}</td>
                         <td>
-                          <span class="badge bg-primary">{{ event.category }}</span>
+                          <span class="badge bg-primary">{{ event.categoria }}</span>
                         </td>
-                        <td>{{ event.tickets }}</td>
+                        <td>{{ event.quantidadeingresso }}</td>
                         <td>
                           <span class="badge" :class="getStatusBadgeClass(event.status)">
                             {{ event.status }}
@@ -404,117 +393,6 @@
                 <div class="d-flex justify-content-between align-items-center mt-4">
                   <div>
                     <span class="text-muted">Mostrando {{ filteredEvents.length }} de {{ events.length }} eventos</span>
-                  </div>
-                  <nav>
-                    <ul class="pagination mb-0">
-                      <li class="page-item disabled">
-                        <a class="page-link" href="#" tabindex="-1" aria-disabled="true">Anterior</a>
-                      </li>
-                      <li class="page-item active"><a class="page-link" href="#">1</a></li>
-                      <li class="page-item"><a class="page-link" href="#">2</a></li>
-                      <li class="page-item"><a class="page-link" href="#">3</a></li>
-                      <li class="page-item">
-                        <a class="page-link" href="#">Próximo</a>
-                      </li>
-                    </ul>
-                  </nav>
-                </div>
-              </div>
-            </div>
-          </div>
-  
-          <!-- Users Management -->
-          <div v-if="activeMenuItem === 'users'">
-            <div class="d-flex justify-content-between align-items-center mb-4">
-              <h4 class="mb-0">Gerenciamento de Usuários</h4>
-              <button class="btn btn-primary">
-                <i class="bi bi-person-plus me-2"></i>Adicionar Usuário
-              </button>
-            </div>
-  
-            <div class="card border-0 shadow-sm">
-              <div class="card-body">
-                <div class="row g-3 mb-4">
-                  <div class="col-md-6">
-                    <div class="input-group">
-                      <span class="input-group-text bg-white">
-                        <i class="bi bi-search"></i>
-                      </span>
-                      <input type="text" class="form-control" placeholder="Buscar usuários...">
-                    </div>
-                  </div>
-                  <div class="col-md-3">
-                    <select class="form-select">
-                      <option value="">Todos os Tipos</option>
-                      <option value="Cliente">Cliente</option>
-                      <option value="Organizador">Organizador</option>
-                      <option value="Administrador">Administrador</option>
-                    </select>
-                  </div>
-                  <div class="col-md-3">
-                    <select class="form-select">
-                      <option value="">Todos os Status</option>
-                      <option value="Ativo">Ativo</option>
-                      <option value="Inativo">Inativo</option>
-                      <option value="Pendente">Pendente</option>
-                    </select>
-                  </div>
-                </div>
-  
-                <div class="table-responsive">
-                  <table class="table table-hover align-middle">
-                    <thead class="table-light">
-                      <tr>
-                        <th scope="col">Usuário</th>
-                        <th scope="col">Email</th>
-                        <th scope="col">Tipo</th>
-                        <th scope="col">Status</th>
-                        <th scope="col">Data de Cadastro</th>
-                        <th scope="col">Ações</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      <tr v-for="(user, index) in users" :key="index">
-                        <td>
-                          <div class="d-flex align-items-center">
-                            <div class="avatar me-3">
-                              <img :src="user.avatar" alt="User Avatar" class="rounded-circle" width="40" height="40">
-                            </div>
-                            <div>
-                              <div class="fw-bold">{{ user.name }}</div>
-                              <div class="small text-muted">ID: {{ user.id }}</div>
-                            </div>
-                          </div>
-                        </td>
-                        <td>{{ user.email }}</td>
-                        <td>{{ user.type }}</td>
-                        <td>
-                          <span class="badge" :class="getUserStatusBadgeClass(user.status)">
-                            {{ user.status }}
-                          </span>
-                        </td>
-                        <td>{{ user.date }}</td>
-                        <td>
-                          <div class="btn-group">
-                            <button class="btn btn-sm btn-outline-secondary">
-                              <i class="bi bi-pencil"></i>
-                            </button>
-                            <button class="btn btn-sm btn-outline-secondary">
-                              <i class="bi bi-eye"></i>
-                            </button>
-                            <button class="btn btn-sm btn-outline-danger">
-                              <i class="bi bi-trash"></i>
-                            </button>
-                          </div>
-                        </td>
-                      </tr>
-                    </tbody>
-                  </table>
-                </div>
-  
-                <div class="d-flex justify-content-between align-items-center mt-4">
-                  <div>
-                    <span class="text-muted">Mostrando 10 de 45 usuários</span>
                   </div>
                   <nav>
                     <ul class="pagination mb-0">
@@ -671,12 +549,6 @@
               <div class="card-body">
                 <ul class="nav nav-tabs" id="settingsTabs" role="tablist">
                   <li class="nav-item" role="presentation">
-                    <button class="nav-link active" id="general-tab" data-bs-toggle="tab" data-bs-target="#general" type="button" role="tab" aria-controls="general" aria-selected="true">Geral</button>
-                  </li>
-                  <li class="nav-item" role="presentation">
-                    <button class="nav-link" id="security-tab" data-bs-toggle="tab" data-bs-target="#security" type="button" role="tab" aria-controls="security" aria-selected="false">Segurança</button>
-                  </li>
-                  <li class="nav-item" role="presentation">
                     <button class="nav-link" id="notifications-tab" data-bs-toggle="tab" data-bs-target="#notifications" type="button" role="tab" aria-controls="notifications" aria-selected="false">Notificações</button>
                   </li>
                   <li class="nav-item" role="presentation">
@@ -684,88 +556,26 @@
                   </li>
                 </ul>
                 <div class="tab-content p-3" id="settingsTabsContent">
-                  <div class="tab-pane fade show active" id="general" role="tabpanel" aria-labelledby="general-tab">
-                    <h5 class="mb-4">Configurações Gerais</h5>
-                    <form>
-                      <div class="mb-3">
-                        <label for="siteName" class="form-label">Nome do Site</label>
-                        <input type="text" class="form-control" id="siteName" value="Conecta Eventos">
-                      </div>
-                      <div class="mb-3">
-                        <label for="siteDescription" class="form-label">Descrição do Site</label>
-                        <textarea class="form-control" id="siteDescription" rows="3">A melhor plataforma para encontrar e promover eventos no Brasil.</textarea>
-                      </div>
-                      <div class="mb-3">
-                        <label for="contactEmail" class="form-label">Email de Contato</label>
-                        <input type="email" class="form-control" id="contactEmail" value="contato@conectaeventos.com.br">
-                      </div>
-                      <div class="mb-3">
-                        <label for="logoUpload" class="form-label">Logo do Site</label>
-                        <input class="form-control" type="file" id="logoUpload">
-                      </div>
-                      <div class="mb-3">
-                        <label for="faviconUpload" class="form-label">Favicon</label>
-                        <input class="form-control" type="file" id="faviconUpload">
-                      </div>
-                      <div class="mb-3">
-                        <label class="form-label">Redes Sociais</label>
-                        <div class="input-group mb-2">
-                          <span class="input-group-text"><i class="bi bi-facebook"></i></span>
-                          <input type="text" class="form-control" placeholder="URL do Facebook" value="https://facebook.com/conectaeventos">
-                        </div>
-                        <div class="input-group mb-2">
-                          <span class="input-group-text"><i class="bi bi-instagram"></i></span>
-                          <input type="text" class="form-control" placeholder="URL do Instagram" value="https://instagram.com/conectaeventos">
-                        </div>
-                        <div class="input-group mb-2">
-                          <span class="input-group-text"><i class="bi bi-twitter"></i></span>
-                          <input type="text" class="form-control" placeholder="URL do Twitter" value="https://twitter.com/conectaeventos">
-                        </div>
-                      </div>
-                      <button type="submit" class="btn btn-primary">Salvar Alterações</button>
-                    </form>
-                  </div>
-                  <div class="tab-pane fade" id="security" role="tabpanel" aria-labelledby="security-tab">
-                    <h5 class="mb-4">Configurações de Segurança</h5>
-                    <form>
-                      <div class="mb-3 form-check form-switch">
-                        <input class="form-check-input" type="checkbox" id="twoFactorAuth" checked>
-                        <label class="form-check-label" for="twoFactorAuth">Autenticação de dois fatores</label>
-                        <div class="form-text">Requer verificação adicional ao fazer login</div>
-                      </div>
-                      <div class="mb-3 form-check form-switch">
-                        <input class="form-check-input" type="checkbox" id="loginNotifications" checked>
-                        <label class="form-check-label" for="loginNotifications">Notificações de login</label>
-                        <div class="form-text">Receba notificações quando houver login em sua conta</div>
-                      </div>
-                      <div class="mb-3">
-                        <label for="sessionTimeout" class="form-label">Tempo limite da sessão (minutos)</label>
-                        <input type="number" class="form-control" id="sessionTimeout" value="30">
-                      </div>
-                      <div class="mb-4">
-                        <label for="passwordPolicy" class="form-label">Política de senhas</label>
-                        <select class="form-select" id="passwordPolicy">
-                          <option value="medium" selected>Média (mínimo 8 caracteres, letras e números)</option>
-                          <option value="strong">Forte (mínimo 10 caracteres, letras, números e símbolos)</option>
-                          <option value="very-strong">Muito forte (mínimo 12 caracteres, maiúsculas, minúsculas, números e símbolos)</option>
-                        </select>
-                      </div>
-                      <button type="submit" class="btn btn-primary">Salvar Alterações</button>
-                    </form>
-                  </div>
                   <div class="tab-pane fade" id="notifications" role="tabpanel" aria-labelledby="notifications-tab">
                     <h5 class="mb-4">Configurações de Notificações</h5>
                     <form>
                       <div class="mb-3">
                         <label class="form-label">Notificações por Email</label>
                         <div class="form-check mb-2">
-                          <input class="form-check-input" type="checkbox" id="emailNewEvent" checked>
-                          <label class="form-check-label" for="emailNewEvent">Novos eventos cadastrados</label>
+                          <input class="form-check-input" type="checkbox" id="emailNewEvent">
+                          <label class="form-check-label" for="emailNewEvent">Atualizações de vendas</label>
                         </div>
                         <div class="form-check mb-2">
-                          <input class="form-check-input" type="checkbox" id="emailNewUser" checked>
-                          <label class="form-check-label" for="emailNewUser">Novos usuários registrados</label>
+                          <input class="form-check-input" type="checkbox" id="emailSales" checked>
+                          <label class="form-check-label" for="emailSales">Relatórios de vendas</label>
                         </div>
+                        <div class="form-check mb-2">
+                          <input class="form-check-input" type="checkbox" id="emailSystem" >
+                          <label class="form-check-label" for="emailSystem">Alertas do sistema</label>
+                        </div>
+                      </div>
+                      <div class="mb-3">
+                        <label class="form-label">Notificações no Sistema</label>
                         <div class="form-check mb-2">
                           <input class="form-check-input" type="checkbox" id="emailSales" checked>
                           <label class="form-check-label" for="emailSales">Relatórios de vendas</label>
@@ -773,17 +583,6 @@
                         <div class="form-check mb-2">
                           <input class="form-check-input" type="checkbox" id="emailSystem" checked>
                           <label class="form-check-label" for="emailSystem">Alertas do sistema</label>
-                        </div>
-                      </div>
-                      <div class="mb-3">
-                        <label class="form-label">Notificações no Sistema</label>
-                        <div class="form-check mb-2">
-                          <input class="form-check-input" type="checkbox" id="systemNewEvent" checked>
-                          <label class="form-check-label" for="systemNewEvent">Novos eventos cadastrados</label>
-                        </div>
-                        <div class="form-check mb-2">
-                          <input class="form-check-input" type="checkbox" id="systemNewUser" checked>
-                          <label class="form-check-label" for="systemNewUser">Novos usuários registrados</label>
                         </div>
                         <div class="form-check mb-2">
                           <input class="form-check-input" type="checkbox" id="systemSales" checked>
@@ -817,11 +616,6 @@
                         <label for="serviceFee" class="form-label">Taxa de Serviço (%)</label>
                         <input type="number" class="form-control" id="serviceFee" value="10">
                       </div>
-                      <div class="mb-3 form-check form-switch">
-                        <input class="form-check-input" type="checkbox" id="testMode" checked>
-                        <label class="form-check-label" for="testMode">Modo de Teste</label>
-                        <div class="form-text">As transações não serão processadas realmente</div>
-                      </div>
                       <button type="submit" class="btn btn-primary">Salvar Alterações</button>
                     </form>
                   </div>
@@ -838,70 +632,96 @@
           <div class="modal-content">
             <div class="modal-header">
               <h5 class="modal-title" id="addEventModalLabel">Adicionar Novo Evento</h5>
-              <button type="button" class="btn-close" @click="showAddEventModal = false"></button>
+                <button type="button" class="btn-close" @click="closeAddEventModal"></button>
             </div>
             <div class="modal-body">
-              <form>
+              <form @submit.prevent="addEvent">
                 <div class="row g-3">
                   <div class="col-md-12">
-                    <label for="eventName" class="form-label">Nome do Evento</label>
-                    <input type="text" class="form-control" id="eventName" placeholder="Digite o nome do evento">
+                    <label for="nomeevento" class="form-label">Nome do Evento*</label>
+                    <input type="text" class="form-control" id="nomeevento" 
+                      v-model="newEvent.nomeevento" required
+                      placeholder="Digite o nome do evento">
                   </div>
+                  
                   <div class="col-md-6">
-                    <label for="eventCategory" class="form-label">Categoria</label>
-                    <select class="form-select" id="eventCategory">
+                    <label for="categoria" class="form-label">Categoria*</label>
+                    <select class="form-select" id="categoria" v-model="newEvent.categoria" required>
                       <option value="">Selecione uma categoria</option>
-                      <option value="Festival">Festival</option>
-                      <option value="Show">Show</option>
-                      <option value="Conferência">Conferência</option>
-                      <option value="Workshop">Workshop</option>
-                      <option value="Teatro">Teatro</option>
+                      <option value="Música">Música</option>
                       <option value="Esporte">Esporte</option>
+                      <option value="Arte">Arte</option>
+                      <option value="Tecnologia">Tecnologia</option>
+                      <option value="Gastronomia">Gastronomia</option>
                     </select>
                   </div>
-                  <div class="col-md-6">
-                    <label for="eventOrganizer" class="form-label">Organizador</label>
-                    <select class="form-select" id="eventOrganizer">
-                      <option value="">Selecione um organizador</option>
-                      <option value="1">Produtora Eventos Brasil</option>
-                      <option value="2">Show Produções</option>
-                      <option value="3">Festival Company</option>
+                  
+                  <div class="col-md-4">
+                    <label for="datainicio" class="form-label">Data de Início*</label>
+                    <input type="date" class="form-control" id="datainicio"
+                      v-model="newEvent.datainicio" required>
+                  </div>
+                  
+                  <div class="col-md-4">
+                    <label for="horainicio" class="form-label">Hora de Início</label>
+                    <input type="time" class="form-control" id="horainicio"
+                      v-model="newEvent.horainicio" step="3600">
+                  </div>
+                  
+                  <div class="col-md-4">
+                    <label for="datafim" class="form-label">Data de Término</label>
+                    <input type="date" class="form-control" id="datafim"
+                      v-model="newEvent.datafim">
+                  </div>
+                  
+                  <div class="col-md-4">
+                    <label for="horafim" class="form-label">Hora de Término</label>
+                    <input type="time" class="form-control" id="horafim"
+                      v-model="newEvent.horafim" step="3600">
+                  </div>
+                  
+                  <div class="col-md-4">
+                    <label for="quantidadeingresso" class="form-label">Quant. Ingressos</label>
+                    <input type="number" class="form-control" id="quantidadeingresso"
+                      v-model.number="newEvent.quantidadeingresso" min="0">
+                  </div>
+                  
+                  <div class="col-md-4">
+                    <label for="status" class="form-label">Status</label>
+                    <select class="form-select" id="status" v-model="newEvent.status">
+                      <option value="ativo">Ativo</option>
+                      <option value="inativo">Inativo</option>
                     </select>
                   </div>
-                  <div class="col-md-6">
-                    <label for="eventStartDate" class="form-label">Data de Início</label>
-                    <input type="date" class="form-control" id="eventStartDate">
-                  </div>
-                  <div class="col-md-6">
-                    <label for="eventEndDate" class="form-label">Data de Término</label>
-                    <input type="date" class="form-control" id="eventEndDate">
-                  </div>
+                  
                   <div class="col-md-12">
-                    <label for="eventLocation" class="form-label">Local</label>
-                    <input type="text" class="form-control" id="eventLocation" placeholder="Digite o local do evento">
+                    <label for="local" class="form-label">Local*</label>
+                    <input type="text" class="form-control" id="local"
+                      v-model="newEvent.local" required
+                      placeholder="Digite o local do evento">
                   </div>
+                  
                   <div class="col-md-12">
-                    <label for="eventDescription" class="form-label">Descrição</label>
-                    <textarea class="form-control" id="eventDescription" rows="4" placeholder="Digite a descrição do evento"></textarea>
+                    <label for="descricao" class="form-label">Descrição*</label>
+                    <textarea class="form-control" id="descricao" rows="4"
+                      v-model="newEvent.descricao" required
+                      placeholder="Digite a descrição do evento"></textarea>
                   </div>
-                  <div class="col-md-6">
-                    <label for="eventImage" class="form-label">Imagem do Evento</label>
-                    <input type="file" class="form-control" id="eventImage">
-                  </div>
-                  <div class="col-md-6">
-                    <label for="eventStatus" class="form-label">Status</label>
-                    <select class="form-select" id="eventStatus">
-                      <option value="Rascunho">Rascunho</option>
-                      <option value="Publicado">Publicado</option>
-                      <option value="Cancelado">Cancelado</option>
-                    </select>
+                  
+                  <div class="col-md-12">
+                    <label for="imagemevento" class="form-label">Imagem do Evento</label>
+                    <input type="file" class="form-control" id="imagemevento"
+                      @change="handleImageUpload" accept="image/*">
+                    <div class="mt-2" v-if="newEvent.imagemevento">
+                      <img :src="newEvent.imagemevento" alt="Pré-visualização" class="img-thumbnail" width="100">
+                    </div>
                   </div>
                 </div>
               </form>
             </div>
             <div class="modal-footer">
-              <button type="button" class="btn btn-secondary" @click="showAddEventModal = false">Cancelar</button>
-              <button type="button" class="btn btn-primary">Salvar Evento</button>
+              <button type="button" class="btn btn-secondary" @click="closeAddEventModal">Cancelar</button>
+              <button type="button" class="btn btn-primary" @click="addEvent">Salvar Evento</button>
             </div>
           </div>
         </div>
@@ -930,6 +750,7 @@
   </template>
   
   <script>
+  import axios from 'axios';
   export default {
     name: 'AdminPainel',
     data() {
@@ -937,6 +758,20 @@
         sidebarCollapsed: false,
         activeMenuItem: 'dashboard',
         showAddEventModal: false,
+        newEvent: {
+          nomeevento: '',
+          descricao: '',
+          datainicio: '',
+          datafim: '',
+          horainicio: '17:00:00',
+          horafim: '23:00:00',
+          local: '',
+          imagemevento: 'https://placehold.co/600x400',
+          categoria: '',
+          quantidadeingresso: 0,
+          status: 'ativo',
+          organizadorId: null
+        },
         showDeleteEventModal: false,
         eventToDelete: null,
         searchQuery: '',
@@ -946,179 +781,10 @@
         menuItems: [
           { id: 'dashboard', name: 'Dashboard', icon: 'bi-speedometer2' },
           { id: 'events', name: 'Eventos', icon: 'bi-calendar-event' },
-          { id: 'users', name: 'Usuários', icon: 'bi-people' },
           { id: 'reports', name: 'Relatórios', icon: 'bi-bar-chart' },
           { id: 'settings', name: 'Configurações', icon: 'bi-gear' }
         ],
-        events: [
-          {
-            id: 'EVT001',
-            name: 'Festival de Música Verão 2023',
-            organizer: 'Produtora Eventos Brasil',
-            date: '15-17 Dez 2023',
-            category: 'Festival',
-            tickets: '1250/2000',
-            status: 'Publicado',
-            image: 'https://placehold.co/600x400',
-            selected: false
-          },
-          {
-            id: 'EVT002',
-            name: 'Show de Rock Nacional',
-            organizer: 'Show Produções',
-            date: '22 Nov 2023',
-            category: 'Show',
-            tickets: '850/1000',
-            status: 'Publicado',
-            image: 'https://placehold.co/600x400',
-            selected: false
-          },
-          {
-            id: 'EVT003',
-            name: 'Conferência de Tecnologia',
-            organizer: 'Tech Events',
-            date: '5-7 Dez 2023',
-            category: 'Conferência',
-            tickets: '320/500',
-            status: 'Publicado',
-            image: 'https://placehold.co/600x400',
-            selected: false
-          },
-          {
-            id: 'EVT004',
-            name: 'Workshop de Fotografia',
-            organizer: 'Arte Visual',
-            date: '18 Nov 2023',
-            category: 'Workshop',
-            tickets: '45/50',
-            status: 'Publicado',
-            image: 'https://placehold.co/600x400',
-            selected: false
-          },
-          {
-            id: 'EVT005',
-            name: 'Peça de Teatro: O Fantasma da Ópera',
-            organizer: 'Teatro Municipal',
-            date: '10 Dez 2023',
-            category: 'Teatro',
-            tickets: '180/300',
-            status: 'Rascunho',
-            image: 'https://placehold.co/600x400',
-            selected: false
-          },
-          {
-            id: 'EVT006',
-            name: 'Campeonato de Futebol Amador',
-            organizer: 'Liga Esportiva',
-            date: '25-26 Nov 2023',
-            category: 'Esporte',
-            tickets: '0/500',
-            status: 'Cancelado',
-            image: 'https://placehold.co/600x400',
-            selected: false
-          },
-          {
-            id: 'EVT007',
-            name: 'Festival de Jazz',
-            organizer: 'Music Productions',
-            date: '10-12 Jan 2024',
-            category: 'Festival',
-            tickets: '0/1500',
-            status: 'Rascunho',
-            image: 'https://placehold.co/600x400',
-            selected: false
-          },
-          {
-            id: 'EVT008',
-            name: 'Feira Gastronômica',
-            organizer: 'Food Events',
-            date: '3-5 Dez 2023',
-            category: 'Feira',
-            tickets: '750/1000',
-            status: 'Publicado',
-            image: 'https://placehold.co/600x400',
-            selected: false
-          }
-        ],
-        users: [
-          {
-            id: 'USR001',
-            name: 'João Silva',
-            email: 'joao.silva@email.com',
-            type: 'Cliente',
-            status: 'Ativo',
-            date: '15/05/2023',
-            avatar: 'https://placehold.co/100x100'
-          },
-          {
-            id: 'USR002',
-            name: 'Maria Oliveira',
-            email: 'maria.oliveira@email.com',
-            type: 'Cliente',
-            status: 'Ativo',
-            date: '22/06/2023',
-            avatar: 'https://placehold.co/100x100'
-          },
-          {
-            id: 'USR003',
-            name: 'Carlos Santos',
-            email: 'carlos.santos@email.com',
-            type: 'Organizador',
-            status: 'Ativo',
-            date: '10/04/2023',
-            avatar: 'https://placehold.co/100x100'
-          },
-          {
-            id: 'USR004',
-            name: 'Ana Pereira',
-            email: 'ana.pereira@email.com',
-            type: 'Cliente',
-            status: 'Inativo',
-            date: '05/07/2023',
-            avatar: 'https://placehold.co/100x100'
-          },
-          {
-            id: 'USR005',
-            name: 'Roberto Almeida',
-            email: 'roberto.almeida@email.com',
-            type: 'Organizador',
-            status: 'Ativo',
-            date: '18/03/2023',
-            avatar: 'https://placehold.co/100x100'
-          },
-          {
-            id: 'USR006',
-            name: 'Fernanda Costa',
-            email: 'fernanda.costa@email.com',
-            type: 'Administrador',
-            status: 'Ativo',
-            date: '02/01/2023',
-            avatar: 'https://placehold.co/100x100'
-          },
-          {
-            id: 'USR007',
-            name: 'Lucas Mendes',
-            email: 'lucas.mendes@email.com',
-            type: 'Cliente',
-            status: 'Pendente',
-            date: '30/07/2023',
-            avatar: 'https://placehold.co/100x100'
-          }
-        ],
-        recentEvents: [
-          { name: 'Festival de Música Verão 2023', date: '15-17 Dez 2023', status: 'Publicado' },
-          { name: 'Show de Rock Nacional', date: '22 Nov 2023', status: 'Publicado' },
-          { name: 'Conferência de Tecnologia', date: '5-7 Dez 2023', status: 'Publicado' },
-          { name: 'Workshop de Fotografia', date: '18 Nov 2023', status: 'Publicado' },
-          { name: 'Peça de Teatro: O Fantasma da Ópera', date: '10 Dez 2023', status: 'Rascunho' }
-        ],
-        recentUsers: [
-          { name: 'João Silva', type: 'Cliente', date: '15/05/2023', avatar: 'https://placehold.co/100x100' },
-          { name: 'Maria Oliveira', type: 'Cliente', date: '22/06/2023', avatar: 'https://placehold.co/100x100' },
-          { name: 'Carlos Santos', type: 'Organizador', date: '10/04/2023', avatar: 'https://placehold.co/100x100' },
-          { name: 'Ana Pereira', type: 'Cliente', date: '05/07/2023', avatar: 'https://placehold.co/100x100' },
-          { name: 'Roberto Almeida', type: 'Organizador', date: '18/03/2023', avatar: 'https://placehold.co/100x100' }
-        ]
+        events: [],
       };
     },
     computed: {
@@ -1139,69 +805,213 @@
         });
       }
     },
+    created() {
+    this.fetchEvents();
+  },
     methods: {
-      toggleSidebar() {
-        this.sidebarCollapsed = !this.sidebarCollapsed;
-      },
-      setActiveMenuItem(menuId) {
-        this.activeMenuItem = menuId;
-      },
-      toggleSelectAll() {
-        this.events.forEach(event => {
-          event.selected = this.selectAll;
+      async fetchEvents() {
+      this.isLoading = true;
+      try {
+        const eventsResponse = await fetch("http://localhost:3000/eventos");
+        if (!eventsResponse.ok) throw new Error("Erro ao carregar eventos");
+        const eventos = await eventsResponse.json();
+
+        const ingressosResponse = await fetch(
+          "http://localhost:3000/ingressos"
+        );
+        if (!ingressosResponse.ok)
+          throw new Error("Erro ao carregar ingressos");
+        const ingressos = await ingressosResponse.json();
+
+        this.events = eventos.map((evento) => {
+          const ingressosDoEvento = ingressos.filter(
+            (ingresso) => ingresso.EventoId === evento.id
+          );
+          return {
+            ...evento,
+            ingressos: ingressosDoEvento,
+            precoMinimo:
+              ingressosDoEvento.length > 0
+                ? Math.min(...ingressosDoEvento.map((i) => parseFloat(i.preco)))
+                : 0,
+          };
+        });
+
+        this.error = null;
+      } catch (err) {
+        console.error("Erro na API:", err);
+        this.error = "Não foi possível carregar os dados";
+      } finally {
+        this.isLoading = false;
+      }
+    },
+
+    formatDate(dateString) {
+      const options = { day: "2-digit", month: "long", year: "numeric" };
+      return new Date(dateString).toLocaleDateString("pt-BR", options);
+    },
+
+    formatTime(timeString) {
+      return timeString.substring(0, 5);
+    },
+    formatPrice(price) {
+      return parseFloat(price).toFixed(2).replace(".", ",");
+    },
+      openAddEventModal() {
+        this.showAddEventModal = true;
+        this.$nextTick(() => {
+          const modal = new bootstrap.Modal(document.getElementById('addEventModal'));
+          modal.show();
         });
       },
-      resetFilters() {
-        this.searchQuery = '';
-        this.filterCategory = '';
-        this.filterStatus = '';
-      },
-      editEvent(event) {
-        // Implementar lógica para editar evento
-        console.log('Editar evento:', event);
-      },
-      viewEvent(event) {
-        // Implementar lógica para visualizar evento
-        console.log('Visualizar evento:', event);
-      },
-      confirmDeleteEvent(event) {
-        this.eventToDelete = event;
-        this.showDeleteEventModal = true;
-      },
-      deleteEvent() {
-        // Implementar lógica para excluir evento
-        console.log('Excluir evento:', this.eventToDelete);
-        this.events = this.events.filter(event => event.id !== this.eventToDelete.id);
-        this.showDeleteEventModal = false;
-        this.eventToDelete = null;
-      },
-      getStatusBadgeClass(status) {
-        switch (status) {
-          case 'Publicado':
-            return 'bg-success';
-          case 'Rascunho':
-            return 'bg-warning';
-          case 'Cancelado':
-            return 'bg-danger';
-          case 'Concluído':
-            return 'bg-info';
-          default:
-            return 'bg-secondary';
+      closeAddEventModal() {
+        const modal = bootstrap.Modal.getInstance(document.getElementById('addEventModal'));
+        if (modal) {
+          modal.hide();
         }
+        this.showAddEventModal = false;
       },
-      getUserStatusBadgeClass(status) {
-        switch (status) {
-          case 'Ativo':
-            return 'bg-success';
-          case 'Inativo':
-            return 'bg-danger';
-          case 'Pendente':
-            return 'bg-warning';
-          default:
-            return 'bg-secondary';
-        }
-      }
+      resetNewEventForm() {
+    this.newEvent = {
+      nomeevento: '',
+      descricao: '',
+      datainicio: '',
+      datafim: '',
+      horainicio: '17:00:00',
+      horafim: '23:00:00',
+      local: '',
+      imagemevento: 'https://placehold.co/600x400',
+      categoria: '',
+      quantidadeingresso: 0,
+      status: 'ativo',
+      organizadorId: null
+    };
+  },
+      async addEvent() {
+  try {
+    if (!this.validateEventForm()) return;
+    
+    const eventData = {
+      nomeevento: this.newEvent.nomeevento,
+      descricao: this.newEvent.descricao,
+      datainicio: this.newEvent.datainicio,
+      datafim: this.newEvent.datafim || null,
+      horainicio: this.newEvent.horainicio,
+      horafim: this.newEvent.horafim,
+      local: this.newEvent.local,
+      imagemevento: this.newEvent.imagemevento || 'https://placehold.co/600x400',
+      categoria: this.newEvent.categoria,
+      quantidadeingresso: parseInt(this.newEvent.quantidadeingresso) || 0,
+      status: this.newEvent.status,
+      organizadorId: parseInt(this.newEvent.organizadorId)
+    };
+
+    const response = await axios.post('http://localhost:3000/eventos', eventData);
+    
+    this.events.unshift({
+      id: response.data.id,
+      name: response.data.nomeevento,
+      date: this.formatDate(response.data.datainicio),
+      category: response.data.categoria,
+      tickets: `0/${response.data.quantidadeingresso}`,
+      status: response.data.status === 'ativo' ? 'Publicado' : 'Rascunho',
+      image: response.data.imagemevento
+    });
+
+    this.closeAddEventModal();
+    this.resetNewEventForm();
+    
+    alert('Evento adicionado com sucesso!');
+    
+  } catch (error) {
+  console.error('Erro ao adicionar evento:', error);
+  let errorMessage = 'Erro ao adicionar evento';
+  
+  if (error.response) {
+    if (error.response.data && error.response.data.message) {
+      errorMessage = error.response.data.message;
+    } else if (error.response.status === 401) {
+      errorMessage = 'Você não está autenticado';
+    } else if (error.response.status === 403) {
+      errorMessage = 'Você não tem permissão para esta ação';
     }
+  }
+  
+  alert(errorMessage);
+}
+},
+
+  validateEventForm() {
+  const errors = [];
+  
+  if (!this.newEvent.nomeevento?.trim()) errors.push('Nome do evento é obrigatório');
+  if (!this.newEvent.categoria) errors.push('Categoria é obrigatória');
+  if (!this.newEvent.datainicio) errors.push('Data de início é obrigatória');
+  if (!this.newEvent.local?.trim()) errors.push('Local é obrigatório');
+  if (!this.newEvent.descricao?.trim()) errors.push('Descrição é obrigatória');
+  
+  if (this.newEvent.datafim && new Date(this.newEvent.datafim) < new Date(this.newEvent.datainicio)) {
+    errors.push('Data de término deve ser após a data de início');
+  }
+
+  if (errors.length > 0) {
+    alert(errors.join('\n'));
+    return false;
+  }
+
+  return true;},
+
+  formatDate(dateString) {
+    const options = { day: '2-digit', month: '2-digit', year: 'numeric' };
+    return new Date(dateString).toLocaleDateString('pt-BR', options);
+  },
+  toggleSidebar() {
+    this.sidebarCollapsed = !this.sidebarCollapsed;
+  },
+  setActiveMenuItem(menuId) {
+    this.activeMenuItem = menuId;
+  },
+  toggleSelectAll() {
+    this.events.forEach(event => {
+      event.selected = this.selectAll;
+    });
+  },
+  resetFilters() {
+    this.searchQuery = '';
+    this.filterCategory = '';
+    this.filterStatus = '';
+  },
+  editEvent(event) {
+    console.log('Editar evento:', event);
+  },
+  viewEvent(event) {
+    console.log('Visualizar evento:', event);
+  },
+  confirmDeleteEvent(event) {
+    this.eventToDelete = event;
+    this.showDeleteEventModal = true;
+  },
+  deleteEvent() {
+    console.log('Excluir evento:', this.eventToDelete);
+    this.events = this.events.filter(event => event.id !== this.eventToDelete.id);
+    this.showDeleteEventModal = false;
+    this.eventToDelete = null;
+  },
+  getStatusBadgeClass(status) {
+    switch (status) {
+      case 'Publicado':
+        return 'bg-success';
+      case 'Rascunho':
+        return 'bg-warning';
+      case 'Cancelado':
+        return 'bg-danger';
+      case 'Concluído':
+        return 'bg-info';
+      default:
+        return 'bg-secondary';
+    }
+  },
+}
   };
   </script>
   
