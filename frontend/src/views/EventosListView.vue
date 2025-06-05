@@ -934,12 +934,10 @@ export default {
   },
   computed: {
     filteredEvents() {
-      // Filtra eventos vazios e mantém apenas ativos
       let result = this.events.filter(
         (event) => event.nomeevento && event.status === "ativo"
       );
 
-      // Filtro por texto de busca
       if (this.searchQuery) {
         const query = this.searchQuery.toLowerCase();
         result = result.filter(
@@ -951,14 +949,12 @@ export default {
         );
       }
 
-      // Filtro por localização
       if (this.selectedLocation) {
         result = result.filter((event) =>
           event.local.includes(this.selectedLocation)
         );
       }
 
-      // Filtro por categorias
       if (this.selectedCategories.length > 0) {
         result = result.filter((event) =>
           this.selectedCategories.some(
@@ -969,7 +965,6 @@ export default {
         );
       }
 
-      // Filtro por data
       if (this.selectedDate === "today") {
         const today = new Date().toISOString().split("T")[0];
         result = result.filter((event) => event.datainicio === today);
@@ -1029,7 +1024,6 @@ export default {
   },
   methods: {
     searchEvents() {
-      // Reset to first page when searching
       this.currentPage = 1;
     },
     toggleCategory(categoryId) {
@@ -1054,7 +1048,6 @@ export default {
       this.currentPage = 1;
     },
     applyFilters() {
-      // For mobile view - would close the filter sidebar
       this.currentPage = 1;
     },
     getFilterDescription() {

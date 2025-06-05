@@ -372,9 +372,10 @@
                             <button class="btn btn-sm btn-outline-secondary" @click="viewEvent(event)">
                               <i class="bi bi-eye"></i>
                             </button>
-                            <button class="btn btn-sm btn-outline-danger" @click="confirmDeleteEvent(event)">
+                            <button class="btn btn-sm btn-outline-danger" @click="openDeleteModal(event)">
                               <i class="bi bi-trash"></i>
                             </button>
+                          
                           </div>
                         </td>
                       </tr>
@@ -709,12 +710,10 @@
                   </div>
                   
                   <div class="col-md-12">
-                    <label for="imagemevento" class="form-label">Imagem do Evento</label>
-                    <input type="file" class="form-control" id="imagemevento"
-                      @change="handleImageUpload" accept="image/*">
-                    <div class="mt-2" v-if="newEvent.imagemevento">
-                      <img :src="newEvent.imagemevento" alt="Pré-visualização" class="img-thumbnail" width="100">
-                    </div>
+                    <label for="local" class="form-label">Imagem</label>
+                    <input type="text" class="form-control" id="imagem"
+                      v-model="newEvent.imagemevento" required
+                      placeholder="Imagem do Evento">
                   </div>
                 </div>
               </form>
@@ -729,18 +728,19 @@
   
       <!-- Delete Event Confirmation Modal -->
       <div class="modal fade" id="deleteEventModal" tabindex="-1" aria-labelledby="deleteEventModalLabel" aria-hidden="true" v-if="showDeleteEventModal">
+
         <div class="modal-dialog">
           <div class="modal-content">
             <div class="modal-header">
               <h5 class="modal-title" id="deleteEventModalLabel">Confirmar Exclusão</h5>
-              <button type="button" class="btn-close" @click="showDeleteEventModal = false"></button>
+              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
-              <p>Tem certeza que deseja excluir o evento <strong>{{ eventToDelete?.name }}</strong>?</p>
+              <p>Tem certeza que deseja excluir o evento <strong>{{ eventToDelete?.nomeevento }}</strong>?</p>
               <p class="text-danger">Esta ação não pode ser desfeita.</p>
             </div>
             <div class="modal-footer">
-              <button type="button" class="btn btn-secondary" @click="showDeleteEventModal = false">Cancelar</button>
+              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
               <button type="button" class="btn btn-danger" @click="deleteEvent">Excluir</button>
             </div>
           </div>
@@ -763,10 +763,10 @@
           descricao: '',
           datainicio: '',
           datafim: '',
-          horainicio: '17:00:00',
-          horafim: '23:00:00',
+          horainicio: '00:00:00',
+          horafim: '00:00:00',
           local: '',
-          imagemevento: 'https://placehold.co/600x400',
+          imagemevento: '',
           categoria: '',
           quantidadeingresso: 0,
           status: 'ativo',
@@ -857,20 +857,35 @@
     formatPrice(price) {
       return parseFloat(price).toFixed(2).replace(".", ",");
     },
-      openAddEventModal() {
-        this.showAddEventModal = true;
-        this.$nextTick(() => {
-          const modal = new bootstrap.Modal(document.getElementById('addEventModal'));
-          modal.show();
-        });
-      },
-      closeAddEventModal() {
-        const modal = bootstrap.Modal.getInstance(document.getElementById('addEventModal'));
-        if (modal) {
-          modal.hide();
-        }
-        this.showAddEventModal = false;
-      },
+    openAddEventModal() {
+      this.showAddEventModal = true;
+      this.$nextTick(() => {
+        const modal = new bootstrap.Modal(document.getElementById('addEventModal'));
+        modal.show();
+      });
+    },
+    closeAddEventModal() {
+      const modal = bootstrap.Modal.getInstance(document.getElementById('addEventModal'));
+      if (modal) {
+        modal.hide();
+      }
+      this.showAddEventModal = false;
+    },
+    openDeleteModal(event) {
+      this.eventToDelete = event;
+      this.showDeleteEventModal = true;
+      this.$nextTick(() => {
+        const modal = new bootstrap.Modal(document.getElementById('deleteEventModal'));
+        modal.show();
+      });
+    },
+    closeDeleteModal() {
+      const modal = bootstrap.Modal.getInstance(document.getElementById('deleteEventModal'));
+      if (modal) {
+        modal.hide();
+      }
+      this.showDeleteEventModal = false;
+    },
       resetNewEventForm() {
     this.newEvent = {
       nomeevento: '',
@@ -887,58 +902,58 @@
       organizadorId: null
     };
   },
-      async addEvent() {
-  try {
-    if (!this.validateEventForm()) return;
-    
-    const eventData = {
-      nomeevento: this.newEvent.nomeevento,
-      descricao: this.newEvent.descricao,
-      datainicio: this.newEvent.datainicio,
-      datafim: this.newEvent.datafim || null,
-      horainicio: this.newEvent.horainicio,
-      horafim: this.newEvent.horafim,
-      local: this.newEvent.local,
-      imagemevento: this.newEvent.imagemevento || 'https://placehold.co/600x400',
-      categoria: this.newEvent.categoria,
-      quantidadeingresso: parseInt(this.newEvent.quantidadeingresso) || 0,
-      status: this.newEvent.status,
-      organizadorId: parseInt(this.newEvent.organizadorId)
-    };
+  async addEvent() {
+    try {
+      if (!this.validateEventForm()) return;
+      
+      const eventData = {
+        nomeevento: this.newEvent.nomeevento,
+        descricao: this.newEvent.descricao,
+        datainicio: this.newEvent.datainicio,
+        datafim: this.newEvent.datafim || null,
+        horainicio: this.newEvent.horainicio,
+        horafim: this.newEvent.horafim,
+        local: this.newEvent.local,
+        imagemevento: this.newEvent.imagemevento || 'https://placehold.co/600x400',
+        categoria: this.newEvent.categoria,
+        quantidadeingresso: parseInt(this.newEvent.quantidadeingresso) || 0,
+        status: this.newEvent.status,
+        organizadorId: parseInt(this.newEvent.organizadorId)
+      };
 
-    const response = await axios.post('http://localhost:3000/eventos', eventData);
-    
-    this.events.unshift({
-      id: response.data.id,
-      name: response.data.nomeevento,
-      date: this.formatDate(response.data.datainicio),
-      category: response.data.categoria,
-      tickets: `0/${response.data.quantidadeingresso}`,
-      status: response.data.status === 'ativo' ? 'Publicado' : 'Rascunho',
-      image: response.data.imagemevento
-    });
+      const response = await axios.post('http://localhost:3000/eventos', eventData);
+      
+      this.events.unshift({
+        id: response.data.id,
+        name: response.data.nomeevento,
+        date: this.formatDate(response.data.datainicio),
+        category: response.data.categoria,
+        tickets: `0/${response.data.quantidadeingresso}`,
+        status: response.data.status === 'ativo' ? 'Publicado' : 'Rascunho',
+        image: response.data.imagemevento
+      });
 
-    this.closeAddEventModal();
-    this.resetNewEventForm();
+      this.closeAddEventModal();
+      this.resetNewEventForm();
+      await this.fetchEvents();
+      alert('Evento adicionado com sucesso!');
+      
+    } catch (error) {
+    console.error('Erro ao adicionar evento:', error);
+    let errorMessage = 'Erro ao adicionar evento';
     
-    alert('Evento adicionado com sucesso!');
-    
-  } catch (error) {
-  console.error('Erro ao adicionar evento:', error);
-  let errorMessage = 'Erro ao adicionar evento';
-  
-  if (error.response) {
-    if (error.response.data && error.response.data.message) {
-      errorMessage = error.response.data.message;
-    } else if (error.response.status === 401) {
-      errorMessage = 'Você não está autenticado';
-    } else if (error.response.status === 403) {
-      errorMessage = 'Você não tem permissão para esta ação';
+    if (error.response) {
+      if (error.response.data && error.response.data.message) {
+        errorMessage = error.response.data.message;
+      } else if (error.response.status === 401) {
+        errorMessage = 'Você não está autenticado';
+      } else if (error.response.status === 403) {
+        errorMessage = 'Você não tem permissão para esta ação';
+      }
     }
+    
+    alert(errorMessage);
   }
-  
-  alert(errorMessage);
-}
 },
 
   validateEventForm() {
@@ -987,15 +1002,22 @@
   viewEvent(event) {
     console.log('Visualizar evento:', event);
   },
-  confirmDeleteEvent(event) {
-    this.eventToDelete = event;
-    this.showDeleteEventModal = true;
-  },
-  deleteEvent() {
-    console.log('Excluir evento:', this.eventToDelete);
-    this.events = this.events.filter(event => event.id !== this.eventToDelete.id);
-    this.showDeleteEventModal = false;
-    this.eventToDelete = null;
+  async deleteEvent() {
+    try {
+      if (!this.eventToDelete) return;
+      console.log('oi')
+
+      const response = await axios.delete(`http://localhost:3000/eventos/${this.eventToDelete.id}`);
+      
+      if (response.status === 200) {
+        await this.fetchEvents();
+        this.closeDeleteModal();
+        alert('Evento excluído com sucesso!');
+      }
+    } catch (error) {
+      console.error('Erro ao excluir evento:', error);
+      alert('Erro ao excluir evento: ' + (error.response?.data?.message || error.message));
+    }
   },
   getStatusBadgeClass(status) {
     switch (status) {
