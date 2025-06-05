@@ -1,8 +1,20 @@
 const { Evento } = require('../models');
 
 exports.getAllEventos = async (req, res)=> {
-    const eventos = await Evento.findAll(); 
-    res.json(eventos); 
+    try {
+    const { OrganizadorId } = req.query;
+
+    const where = {};
+    if (OrganizadorId) {
+      where.OrganizadorId = OrganizadorId;
+    }
+
+    const eventos = await Evento.findAll({ where });
+    res.json(eventos);
+  } catch (error) {
+    console.error("Erro ao buscar eventos:", error);
+    res.status(500).json({ error: "Erro interno do servidor" });
+  }
 }; 
 
 exports.getEventoById = async (req,res)=> {
