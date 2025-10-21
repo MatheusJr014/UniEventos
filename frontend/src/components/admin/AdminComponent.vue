@@ -819,7 +819,7 @@
           
           if (!token || typeof token !== 'string' || token.trim() === '') {
             console.error('Token inválido ou não encontrado');
-            this.$router.push('/login');
+            this.$router.push('/auth/login');
             return;
           }
 
@@ -832,7 +832,7 @@
         } catch (error) {
           console.error('Erro ao decodificar token:', error);
           localStorage.removeItem('token');
-          this.$router.push('/login');
+          this.$router.push('/auth/login');
         }
       },
 
@@ -877,7 +877,7 @@
           
           if (!this.organizadorId) {
             alert('Erro de autenticação. Faça login novamente.');
-            this.$router.push('/login');
+            this.$router.push('/auth/login');
             return;
           }
           
@@ -914,7 +914,7 @@
               errorMessage = error.response.data.message;
             } else if (error.response.status === 401) {
               errorMessage = 'Você não está autenticado';
-              this.$router.push('/login');
+              this.$router.push('/auth/login');
             } else if (error.response.status === 403) {
               errorMessage = 'Você não tem permissão para esta ação';
             }

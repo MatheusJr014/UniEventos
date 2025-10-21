@@ -16,37 +16,88 @@ const router = createRouter({
       component: HomeView,
     },
     {
-      path: '/evento/:id',  
-      name: 'evento-detalhes',
-      component: EventoView,
-      props: true
+      path: '/home',
+      redirect: '/'
     },
     {
-      path: '/admin/',
-      name: 'admin',
-      beforeEnter: GuardAdmin.authAdmin,
-      component: AdminView
+      path: '/eventos',
+      children: [
+        {
+          path: '',
+          redirect: '/eventos/lista'
+        },
+        {
+          path: 'lista',
+          name: 'listaDeEvento',
+          component: EventosListView
+        },
+        {
+          path: ':id',
+          name: 'evento-detalhes',
+          component: EventoView,
+          props: true
+        }
+      ]
     },
     {
-      path: '/perfil/',
-      name: 'usuario',
+      path: '/auth',
+      children: [
+        {
+          path: '',
+          redirect: '/auth/login'
+        },
+        {
+          path: 'login',
+          name: 'login',
+          component: LoginAndCadastroView
+        }
+      ]
+    },
+    {
+      path: '/usuario',
       beforeEnter: GuardAdmin.authUser,
-      component: UsuarioView
+      children: [
+        {
+          path: '',
+          redirect: '/usuario/perfil'
+        },
+        {
+          path: 'perfil',
+          name: 'usuario',
+          component: UsuarioView
+        },
+        {
+          path: 'ingressos',
+          name: 'meus-ingressos',
+          component: () => import('../components/User/MeusIngressosComponent.vue')
+        },
+        {
+          path: 'historico',
+          name: 'historico',
+          component: () => import('../components/User/HistoricoComponent.vue')
+        }
+      ]
     },
     {
-      path:'/lista/eventos',
-      name: 'listaDeEvento',
-      component: EventosListView
-    },
-    {
-      path: '/login',
-      name: 'login',
-      component: LoginAndCadastroView
-    },
-    {
-      path: '/teste/',
-      name: 'teste', 
-      component: ()=>import('../components/admin/AdminComponent.vue')
+      path: '/admin',
+      beforeEnter: GuardAdmin.authAdmin,
+      children: [
+        {
+          path: '',
+          name: 'admin',
+          component: AdminView
+        },
+        {
+          path: 'dashboard',
+          name: 'admin-dashboard',
+          component: AdminView
+        },
+        {
+          path: 'teste',
+          name: 'teste', 
+          component: () => import('../components/admin/AdminComponent.vue')
+        }
+      ]
     }
   ],
 });
