@@ -16,16 +16,16 @@
                   <router-link to="/eventos" class="nav-link">Eventos</router-link>
                 </li>
                 <li class="nav-item">
-                  <a class="nav-link" href="#">Categorias</a>
+                  <router-link to="/404" class="nav-link">Categorias</router-link>
                 </li>
                 <li class="nav-item">
-                  <a class="nav-link" href="#">Para Organizadores</a>
+                  <router-link to="/404" class="nav-link">Para Organizadores</router-link>
                 </li>
                 <li class="nav-item">
-                  <a class="nav-link" href="#">Sobre</a>
+                  <router-link to="/404" class="nav-link">Sobre</router-link>
                 </li>
                 <li class="nav-item">
-                  <a class="nav-link" href="#">Contato</a>
+                  <router-link to="/404" class="nav-link">Contato</router-link>
                 </li>
               </ul>
               <div class="d-flex" v-if="!isLoggedIn">

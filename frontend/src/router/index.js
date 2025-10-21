@@ -6,6 +6,7 @@ import UsuarioView from "@/views/UsuarioView.vue";
 import EventosListView from "@/views/EventosListView.vue";
 import GuardAdmin from '../middleware/Auths'; 
 import LoginAndCadastroView from "@/views/LoginAndCadastroView.vue";
+import MaintenancePage from "@/components/Publico/404ErrorDev.vue";
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -18,6 +19,44 @@ const router = createRouter({
     {
       path: '/home',
       redirect: '/'
+    },
+    {
+      path: '/manutencao',
+      name: 'manutencao',
+      component: MaintenancePage
+    },
+    {
+      path: '/404',
+      name: '404',
+      component: MaintenancePage
+    },
+    
+    
+    // Rotas para páginas que ainda não foram implementadas - redirecionam para 404
+    {
+      path: '/termos',
+      name: 'termos',
+      component: MaintenancePage
+    },
+    {
+      path: '/privacidade',
+      name: 'privacidade',
+      component: MaintenancePage
+    },
+    {
+      path: '/faq',
+      name: 'faq',
+      component: MaintenancePage
+    },
+    {
+      path: '/ajuda',
+      name: 'ajuda',
+      component: MaintenancePage
+    },
+    {
+      path: '/politica-cancelamento',
+      name: 'politica-cancelamento',
+      component: MaintenancePage
     },
     {
       path: '/eventos',
