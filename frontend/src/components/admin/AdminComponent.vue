@@ -750,7 +750,8 @@
   </template>
   
   <script>
-  import axios from 'axios';
+  import { criarEvento, deletarEvento, getEventos, getEventosPorOrganizador, getIngressos } from '@/services/api';
+import axios from 'axios';
   import { jwtDecode } from 'jwt-decode';
   const token = localStorage.getItem('token');
   const decoded = jwtDecode(token);
@@ -816,14 +817,11 @@
       async fetchEvents() {
         this.isLoading = true;
         try {
-          const eventsResponse = await fetch(`http://localhost:3000/eventos?OrganizadorId=${organizadorId}`);
-          // const eventsResponse = await fetch("http://localhost:3000/eventos");
+          const eventsResponse = await getEventosPorOrganizador(organizadorId);
           if (!eventsResponse.ok) throw new Error("Erro ao carregar eventos");
           const eventos = await eventsResponse.json();
 
-          const ingressosResponse = await fetch(
-            "http://localhost:3000/ingressos"
-          );
+          const ingressosResponse = await getIngressos();
           if (!ingressosResponse.ok)
             throw new Error("Erro ao carregar ingressos");
           const ingressos = await ingressosResponse.json();
@@ -926,7 +924,7 @@
         OrganizadorId: organizadorId
       };
 
-      const response = await axios.post('http://localhost:3000/eventos', eventData);
+      const response = await criarEvento(eventData);
       
       this.events.unshift({
         id: response.data.id,
@@ -1012,8 +1010,8 @@
       if (!this.eventToDelete) return;
       console.log('oi')
 
-      const response = await axios.delete(`http://localhost:3000/eventos/${this.eventToDelete.id}`);
-      
+      const response = await deletarEvento(this.eventToDelete.id);
+
       if (response.status === 200) {
         await this.fetchEvents();
         this.closeDeleteModal();

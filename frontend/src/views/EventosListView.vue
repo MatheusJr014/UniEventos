@@ -886,6 +886,7 @@
 
 <script>
 import NavBarComponents from "@/components/Publico/NavBarComponents.vue";
+import { getEventos, getIngressos } from "@/services/api";
 
 export default {
   name: "ListagemEventos",
@@ -1111,21 +1112,15 @@ export default {
     async fetchEvents() {
       this.isLoading = true;
       try {
-        const eventsResponse = await fetch("http://localhost:3000/eventos");
-        if (!eventsResponse.ok) throw new Error("Erro ao carregar eventos");
-        const eventos = await eventsResponse.json();
-
-        const ingressosResponse = await fetch(
-          "http://localhost:3000/ingressos"
-        );
-        if (!ingressosResponse.ok)
-          throw new Error("Erro ao carregar ingressos");
-        const ingressos = await ingressosResponse.json();
-
+        console.log('oiioioi')
+        const eventos = await getEventos();
+        const ingressos = await getIngressos();
+        console.log('eventos', eventos)
         this.events = eventos.map((evento) => {
           const ingressosDoEvento = ingressos.filter(
             (ingresso) => ingresso.EventoId === evento.id
           );
+
           return {
             ...evento,
             ingressos: ingressosDoEvento,
