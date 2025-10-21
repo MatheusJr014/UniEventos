@@ -1112,10 +1112,8 @@ export default {
     async fetchEvents() {
       this.isLoading = true;
       try {
-        console.log('oiioioi')
         const eventos = await getEventos();
         const ingressos = await getIngressos();
-        console.log('eventos', eventos)
         this.events = eventos.map((evento) => {
           const ingressosDoEvento = ingressos.filter(
             (ingresso) => ingresso.EventoId === evento.id

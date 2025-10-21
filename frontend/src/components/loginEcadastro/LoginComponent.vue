@@ -22,9 +22,7 @@
             <form @submit.prevent="submit">
                 <div class="mb-3">
                     <label for="loginEmail" class="form-label">Email</label>
-                    <input type="email" class="form-control" id="loginEmail" v-model="email"
-                        required>
-                    <!-- <div class="invalid-feedback">{{ loginErrors.email }}</div> -->
+                    <input type="email" class="form-control" id="loginEmail" v-model="email" required>
                 </div>
                 <div class="mb-3">
                     <div class="d-flex justify-content-between">
@@ -39,7 +37,6 @@
                             @click="showLoginPassword = !showLoginPassword">
                             <i class="bi" :class="showLoginPassword ? 'bi-eye-slash' : 'bi-eye'"></i>
                         </button>
-                        <!-- <div class="invalid-feedback">{{ loginErrors.password }}</div> -->
                     </div>
                 </div>
                 <div class="mb-3 form-check">
@@ -64,15 +61,18 @@
         </div>
     </div>
 </template>
-<script>
 
+<script>
 import Swal from 'sweetalert2';
+import { loginUsuario } from '@/services/api';
 
 export default {
     name: 'LoginComponent',
     data() {
         return {
             loginLoading: false,
+            showLoginPassword: false,
+            showForgotPassword: false,
             email: '',
             senha: ''    
         }
@@ -81,17 +81,18 @@ export default {
         async submit() {
             this.loginLoading = true;
 
-            const payload = { 
+            const credenciais = { 
                 email: this.email,
                 senha: this.senha
             }; 
-            
+
             try {
-                const res = await loginUsuario(payload);
+                const response = await loginUsuario(credenciais);
                 
-                const token = res.token;  
+                const token = response.token;  
                 if (token) {
-                    localStorage.setItem('token', token); // Salva o token no localStorage
+                    localStorage.setItem('token', token);
+                    
                     Swal.fire({
                         icon: 'success',
                         title: 'Login realizado!',
@@ -99,13 +100,15 @@ export default {
                         timer: 2000,
                         showConfirmButton: false
                     }).then(() => {
-                        this.$router.push('/'); // Redireciona após login
+                        this.$router.push('/');
                     });
                 } else {
                     throw new Error('Token não recebido na resposta.');
                 }
-            }catch(error){
-                console.error('Erro na requisição:', error);
+            } catch (error) {
+                console.error('Erro no login:', error);
+                
+                let mensagemErro = 'Ocorreu um erro ao tentar fazer login. Tente novamente.';
                 
                 if (error.response?.status === 401) {
                     error.message = 'Credenciais inválidas. Verifique seu email ou senha.';
@@ -114,7 +117,7 @@ export default {
                 Swal.fire({
                     icon: 'error',
                     title: 'Erro no login',
-                    text: error.message || 'Ocorreu um erro ao tentar fazer login. Tente novamente.',
+                    text: mensagemErro,
                     confirmButtonColor: '#dc3545'
                 });
             } finally {
@@ -124,6 +127,6 @@ export default {
     }
 }
 </script>
-<style lang="">
 
+<style lang="scss" scoped>
 </style>

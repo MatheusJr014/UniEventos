@@ -235,6 +235,7 @@
 </template>
 
 <script>
+import { getUsuarioById } from '@/services/api';
 import axios from 'axios';
 import { jwtDecode } from 'jwt-decode';
 import Swal from 'sweetalert2';
@@ -288,42 +289,44 @@ export default {
             alert('Perfil salvo com sucesso!');
             this.editMode = false;
         },
-        fetchUserData() {
+        async fetchUserData() {
             const token = localStorage.getItem('token');
             if (!token) {
                 console.error('Token não encontrado!');
                 alert('Usuario não encontrado');
                 return;
             }
+            
             try {
                 const decodedToken = jwtDecode(token);
                 const usuarioId = decodedToken.id;
+                
                 if (!usuarioId) {
-                    console.error('ID do professor não encontrado!');
+                    console.error('ID do usuário não encontrado!');
                     return;
-                } axios.get(`http://localhost:3000/usuarios/${usuarioId}`, {
-                    headers: {
-                        Authorization: `Bearer ${token}`
-                    }
-                })
-                    .then(response => {
-                        this.userData = response.data;
-                    })
-                    .catch(error => {
-                        console.error('Erro ao buscar os dados do usuário: ', error);
-                        if (error.response && error.response.status === 401) {
-                            alert('Sessão expirada ou inválida. Faça login novamente.');
-                            // Optionally redirect to login
-                        } else {
-                            alert('Erro ao buscar os dados do usuário. Tente novamente mais tarde.');
-                        }
-                    })
+                }
 
+                this.userData = await getUsuarioById(usuarioId, token);
+                
             } catch (error) {
-                console.error('Erro ao decodificar o token: ', error);
-                alert('Erro na autenticação. Faça login novamente.');
+                console.error('Erro ao buscar os dados do usuário: ', error);
+                let mensagemErro = 'Erro ao buscar os dados do usuário. Tente novamente mais tarde.';
+                
+                if (error.response && error.response.status === 401) {
+                    mensagemErro = 'Sessão expirada ou inválida. Faça login novamente.';
+                    localStorage.removeItem('token');
+                    // Opcional: redirecionar para login
+                    // this.$router.push('/login');
+                }
+                
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Erro',
+                    text: mensagemErro,
+                    confirmButtonColor: '#dc3545'
+                });
             }
-        },
+        }
     }
 };
 </script>

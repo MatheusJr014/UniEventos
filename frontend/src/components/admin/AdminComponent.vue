@@ -749,13 +749,10 @@
     </div>
   </template>
   
-  <script>
-  import { criarEvento, deletarEvento, getEventos, getEventosPorOrganizador, getIngressos } from '@/services/api';
-import axios from 'axios';
+<script>
+  import { criarEvento, deletarEvento, getEventosPorOrganizador, getIngressos } from '@/services/api';
   import { jwtDecode } from 'jwt-decode';
-  const token = localStorage.getItem('token');
-  const decoded = jwtDecode(token);
-  const organizadorId = decoded.id
+
   export default {
     name: 'AdminPainel',
     data() {
@@ -790,6 +787,7 @@ import axios from 'axios';
           { id: 'settings', name: 'Configurações', icon: 'bi-gear' }
         ],
         events: [],
+        organizadorId: null
       };
     },
     computed: {
@@ -800,10 +798,10 @@ import axios from 'axios';
       filteredEvents() {
         return this.events.filter(event => {
           const matchesSearch = this.searchQuery === '' || 
-            event.name.toLowerCase().includes(this.searchQuery.toLowerCase()) ||
-            event.id.toLowerCase().includes(this.searchQuery.toLowerCase());
+            event.nomeevento?.toLowerCase().includes(this.searchQuery.toLowerCase()) || // ✅ Corrigido: event.nomeevento
+            event.id?.toString().includes(this.searchQuery.toLowerCase());
           
-          const matchesCategory = this.filterCategory === '' || event.category === this.filterCategory;
+          const matchesCategory = this.filterCategory === '' || event.categoria === this.filterCategory;
           const matchesStatus = this.filterStatus === '' || event.status === this.filterStatus;
           
           return matchesSearch && matchesCategory && matchesStatus;
@@ -811,20 +809,44 @@ import axios from 'axios';
       }
     },
     created() {
-    this.fetchEvents();
-  },
+      this.getOrganizadorId();
+      this.fetchEvents();
+    },
     methods: {
+      getOrganizadorId() {
+        try {
+          const token = localStorage.getItem('token');
+          
+          if (!token || typeof token !== 'string' || token.trim() === '') {
+            console.error('Token inválido ou não encontrado');
+            this.$router.push('/login');
+            return;
+          }
+
+          const decoded = jwtDecode(token);
+          this.organizadorId = decoded.id;
+          
+          if (!this.organizadorId) {
+            console.error('ID do organizador não encontrado no token');
+          }
+        } catch (error) {
+          console.error('Erro ao decodificar token:', error);
+          localStorage.removeItem('token');
+          this.$router.push('/login');
+        }
+      },
+
       async fetchEvents() {
+        if (!this.organizadorId) {
+          console.error('Organizador ID não disponível');
+          return;
+        }
+
         this.isLoading = true;
         try {
-          const eventsResponse = await getEventosPorOrganizador(organizadorId);
-          if (!eventsResponse.ok) throw new Error("Erro ao carregar eventos");
-          const eventos = await eventsResponse.json();
-
-          const ingressosResponse = await getIngressos();
-          if (!ingressosResponse.ok)
-            throw new Error("Erro ao carregar ingressos");
-          const ingressos = await ingressosResponse.json();
+          const eventos = await getEventosPorOrganizador(this.organizadorId);
+          
+          const ingressos = await getIngressos();
 
           this.events = eventos.map((evento) => {
             const ingressosDoEvento = ingressos.filter(
@@ -849,115 +871,58 @@ import axios from 'axios';
         }
       },
 
-    formatDate(dateString) {
-      const options = { day: "2-digit", month: "long", year: "numeric" };
-      return new Date(dateString).toLocaleDateString("pt-BR", options);
-    },
+      async addEvent() {
+        try {
+          if (!this.validateEventForm()) return;
+          
+          if (!this.organizadorId) {
+            alert('Erro de autenticação. Faça login novamente.');
+            this.$router.push('/login');
+            return;
+          }
+          
+          const eventData = {
+            nomeevento: this.newEvent.nomeevento,
+            descricao: this.newEvent.descricao,
+            datainicio: this.newEvent.datainicio,
+            datafim: this.newEvent.datafim || null,
+            horainicio: this.newEvent.horainicio,
+            horafim: this.newEvent.horafim,
+            local: this.newEvent.local,
+            imagemevento: this.newEvent.imagemevento || 'https://placehold.co/600x400',
+            categoria: this.newEvent.categoria,
+            quantidadeingresso: parseInt(this.newEvent.quantidadeingresso) || 0,
+            status: this.newEvent.status,
+            OrganizadorId: this.organizadorId 
+          };
 
-    formatTime(timeString) {
-      return timeString.substring(0, 5);
-    },
-    formatPrice(price) {
-      return parseFloat(price).toFixed(2).replace(".", ",");
-    },
-    openAddEventModal() {
-      this.showAddEventModal = true;
-      this.$nextTick(() => {
-        const modal = new bootstrap.Modal(document.getElementById('addEventModal'));
-        modal.show();
-      });
-    },
-    closeAddEventModal() {
-      const modal = bootstrap.Modal.getInstance(document.getElementById('addEventModal'));
-      if (modal) {
-        modal.hide();
-      }
-      this.showAddEventModal = false;
-    },
-    openDeleteModal(event) {
-      this.eventToDelete = event;
-      this.showDeleteEventModal = true;
-      this.$nextTick(() => {
-        const modal = new bootstrap.Modal(document.getElementById('deleteEventModal'));
-        modal.show();
-      });
-    },
-    closeDeleteModal() {
-      const modal = bootstrap.Modal.getInstance(document.getElementById('deleteEventModal'));
-      if (modal) {
-        modal.hide();
-      }
-      this.showDeleteEventModal = false;
-    },
-      resetNewEventForm() {
-    this.newEvent = {
-      nomeevento: '',
-      descricao: '',
-      datainicio: '',
-      datafim: '',
-      horainicio: '17:00:00',
-      horafim: '23:00:00',
-      local: '',
-      imagemevento: 'https://placehold.co/600x400',
-      categoria: '',
-      quantidadeingresso: 0,
-      status: 'ativo',
-      organizadorId: null
-    };
-  },
-  async addEvent() {
-    try {
-      if (!this.validateEventForm()) return;
-      
-      const eventData = {
-        nomeevento: this.newEvent.nomeevento,
-        descricao: this.newEvent.descricao,
-        datainicio: this.newEvent.datainicio,
-        datafim: this.newEvent.datafim || null,
-        horainicio: this.newEvent.horainicio,
-        horafim: this.newEvent.horafim,
-        local: this.newEvent.local,
-        imagemevento: this.newEvent.imagemevento || 'https://placehold.co/600x400',
-        categoria: this.newEvent.categoria,
-        quantidadeingresso: parseInt(this.newEvent.quantidadeingresso) || 0,
-        status: this.newEvent.status,
-        OrganizadorId: organizadorId
-      };
-
-      const response = await criarEvento(eventData);
-      
-      this.events.unshift({
-        id: response.data.id,
-        name: response.data.nomeevento,
-        date: this.formatDate(response.data.datainicio),
-        category: response.data.categoria,
-        tickets: `0/${response.data.quantidadeingresso}`,
-        status: response.data.status === 'ativo' ? 'Publicado' : 'Rascunho',
-        image: response.data.imagemevento
-      });
-
-      this.closeAddEventModal();
-      this.resetNewEventForm();
-      await this.fetchEvents();
-      alert('Evento adicionado com sucesso!');
-      
-    } catch (error) {
-    console.error('Erro ao adicionar evento:', error);
-    let errorMessage = 'Erro ao adicionar evento';
-    
-    if (error.response) {
-      if (error.response.data && error.response.data.message) {
-        errorMessage = error.response.data.message;
-      } else if (error.response.status === 401) {
-        errorMessage = 'Você não está autenticado';
-      } else if (error.response.status === 403) {
-        errorMessage = 'Você não tem permissão para esta ação';
-      }
-    }
-    
-    alert(errorMessage);
-  }
-},
+          const response = await criarEvento(eventData);
+          
+          await this.fetchEvents();
+          
+          this.closeAddEventModal();
+          this.resetNewEventForm();
+          
+          alert('Evento adicionado com sucesso!');
+          
+        } catch (error) {
+          console.error('Erro ao adicionar evento:', error);
+          let errorMessage = 'Erro ao adicionar evento';
+          
+          if (error.response) {
+            if (error.response.data && error.response.data.message) {
+              errorMessage = error.response.data.message;
+            } else if (error.response.status === 401) {
+              errorMessage = 'Você não está autenticado';
+              this.$router.push('/login');
+            } else if (error.response.status === 403) {
+              errorMessage = 'Você não tem permissão para esta ação';
+            }
+          }
+          
+          alert(errorMessage);
+        }
+      },
 
   validateEventForm() {
   const errors = [];
@@ -1008,7 +973,6 @@ import axios from 'axios';
   async deleteEvent() {
     try {
       if (!this.eventToDelete) return;
-      console.log('oi')
 
       const response = await deletarEvento(this.eventToDelete.id);
 
