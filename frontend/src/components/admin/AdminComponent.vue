@@ -1008,7 +1008,6 @@ import axios from 'axios';
   async deleteEvent() {
     try {
       if (!this.eventToDelete) return;
-      console.log('oi')
 
       const response = await deletarEvento(this.eventToDelete.id);
 
