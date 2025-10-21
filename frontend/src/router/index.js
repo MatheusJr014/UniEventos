@@ -6,6 +6,7 @@ import UsuarioView from "@/views/UsuarioView.vue";
 import EventosListView from "@/views/EventosListView.vue";
 import GuardAdmin from '../middleware/Auths'; 
 import LoginAndCadastroView from "@/views/LoginAndCadastroView.vue";
+import MaintenancePage from "@/components/Publico/404ErrorDev.vue";
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -16,37 +17,126 @@ const router = createRouter({
       component: HomeView,
     },
     {
-      path: '/evento/:id',  
-      name: 'evento-detalhes',
-      component: EventoView,
-      props: true
+      path: '/home',
+      redirect: '/'
     },
     {
-      path: '/admin/',
-      name: 'admin',
-      beforeEnter: GuardAdmin.authAdmin,
-      component: AdminView
+      path: '/manutencao',
+      name: 'manutencao',
+      component: MaintenancePage
     },
     {
-      path: '/perfil/',
-      name: 'usuario',
+      path: '/404',
+      name: '404',
+      component: MaintenancePage
+    },
+    
+    
+    // Rotas para páginas que ainda não foram implementadas - redirecionam para 404
+    {
+      path: '/termos',
+      name: 'termos',
+      component: MaintenancePage
+    },
+    {
+      path: '/privacidade',
+      name: 'privacidade',
+      component: MaintenancePage
+    },
+    {
+      path: '/faq',
+      name: 'faq',
+      component: MaintenancePage
+    },
+    {
+      path: '/ajuda',
+      name: 'ajuda',
+      component: MaintenancePage
+    },
+    {
+      path: '/politica-cancelamento',
+      name: 'politica-cancelamento',
+      component: MaintenancePage
+    },
+    {
+      path: '/eventos',
+      children: [
+        {
+          path: '',
+          redirect: '/eventos/lista'
+        },
+        {
+          path: 'lista',
+          name: 'listaDeEvento',
+          component: EventosListView
+        },
+        {
+          path: ':id',
+          name: 'evento-detalhes',
+          component: EventoView,
+          props: true
+        }
+      ]
+    },
+    {
+      path: '/auth',
+      children: [
+        {
+          path: '',
+          redirect: '/auth/login'
+        },
+        {
+          path: 'login',
+          name: 'login',
+          component: LoginAndCadastroView
+        }
+      ]
+    },
+    {
+      path: '/usuario',
       beforeEnter: GuardAdmin.authUser,
-      component: UsuarioView
+      children: [
+        {
+          path: '',
+          redirect: '/usuario/perfil'
+        },
+        {
+          path: 'perfil',
+          name: 'usuario',
+          component: UsuarioView
+        },
+        {
+          path: 'ingressos',
+          name: 'meus-ingressos',
+          component: () => import('../components/User/MeusIngressosComponent.vue')
+        },
+        {
+          path: 'historico',
+          name: 'historico',
+          component: () => import('../components/User/HistoricoComponent.vue')
+        }
+      ]
     },
     {
-      path:'/lista/eventos',
-      name: 'listaDeEvento',
-      component: EventosListView
-    },
-    {
-      path: '/login',
-      name: 'login',
-      component: LoginAndCadastroView
-    },
-    {
-      path: '/teste/',
-      name: 'teste', 
-      component: ()=>import('../components/admin/AdminComponent.vue')
+      path: '/admin',
+      beforeEnter: GuardAdmin.authAdmin,
+      children: [
+        {
+          path: '',
+          name: 'admin',
+          component: AdminView
+        },
+        {
+          path: 'dashboard',
+          name: 'admin-dashboard',
+          component: AdminView
+        },
+        {
+          path: 'teste',
+          name: 'teste', 
+          component: () => import('../components/admin/AdminComponent.vue')
+        }
+      ]
     }
   ],
 });

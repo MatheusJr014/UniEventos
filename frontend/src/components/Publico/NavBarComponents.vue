@@ -13,24 +13,24 @@
             <div class="collapse navbar-collapse" id="navbarNav">
               <ul class="navbar-nav mx-auto">
                 <li class="nav-item">
-                  <a class="nav-link" href="/lista/eventos">Eventos</a>
+                  <router-link to="/eventos" class="nav-link">Eventos</router-link>
                 </li>
                 <li class="nav-item">
-                  <a class="nav-link" href="#">Categorias</a>
+                  <router-link to="/404" class="nav-link">Categorias</router-link>
                 </li>
                 <li class="nav-item">
-                  <a class="nav-link" href="#">Para Organizadores</a>
+                  <router-link to="/404" class="nav-link">Para Organizadores</router-link>
                 </li>
                 <li class="nav-item">
-                  <a class="nav-link" href="#">Sobre</a>
+                  <router-link to="/404" class="nav-link">Sobre</router-link>
                 </li>
                 <li class="nav-item">
-                  <a class="nav-link" href="#">Contato</a>
+                  <router-link to="/404" class="nav-link">Contato</router-link>
                 </li>
               </ul>
               <div class="d-flex" v-if="!isLoggedIn">
-                <a href="/login" class="btn me-2 d-none d-sm-inline">Entrar</a>
-                <a href="/login" class="btn btn-primary">Cadastrar</a>
+                <router-link to="/auth/login" class="btn me-2 d-none d-sm-inline">Entrar</router-link>
+                <router-link to="/auth/login" class="btn btn-primary">Cadastrar</router-link>
               </div>
               <div class="d-flex align-items-center" v-else>
                 <div class="dropdown">
@@ -41,10 +41,10 @@
                     <span class="d-none d-sm-inline">{{ userData.nome }}</span>
                   </a>
                   <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
-                    <li><a class="dropdown-item active" href="/perfil/"><i class="bi bi-person me-2"></i>Meu Perfil</a></li>
-                    <li><a class="dropdown-item" href="#"><i class="bi bi-ticket-perforated me-2"></i>Meus Ingressos</a>
+                    <li><router-link to="/usuario/perfil" class="dropdown-item active"><i class="bi bi-person me-2"></i>Meu Perfil</router-link></li>
+                    <li><router-link to="/usuario/ingressos" class="dropdown-item"><i class="bi bi-ticket-perforated me-2"></i>Meus Ingressos</router-link>
                     </li>
-                    <li><a class="dropdown-item" href="#"><i class="bi bi-heart me-2"></i>Favoritos</a></li>
+                    <li><router-link to="/usuario/historico" class="dropdown-item"><i class="bi bi-heart me-2"></i>Favoritos</router-link></li>
                     <li>
                       <hr class="dropdown-divider">
                     </li>
@@ -96,7 +96,7 @@ export default {
       localStorage.removeItem("token");
       this.isLoggedIn = false;
       this.userData = {},
-        this.$router.push("/login")
+        this.$router.push("/auth/login")
     }
   }
 }

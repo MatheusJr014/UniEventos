@@ -8,9 +8,9 @@
             <h2 class="display-5 fw-bold">Eventos em Destaque</h2>
             <p class="text-muted">Não perca os eventos mais populares da temporada</p>
           </div>
-          <a href="/lista/eventos" class="text-decoration-none d-flex align-items-center text-secondary">
+          <router-link to="/eventos" class="text-decoration-none d-flex align-items-center text-secondary">
             Ver todos <i class="bi bi-arrow-right ms-1"></i>
-          </a>
+          </router-link>
         </div>
         <div class="row g-4">
           <div v-for="event in events" :key="event.id" class="col-md-6 col-lg-4">
