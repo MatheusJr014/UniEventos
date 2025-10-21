@@ -136,6 +136,7 @@
 import Swal from 'sweetalert2';
 import axios from 'axios';
 import { validateNome, validateCPF, validateConfirmPassword, validateSenha, validateEmail } from '@/assets/validate';
+import { criarUsuario } from '@/services/api';
 
 export default {
   name: 'CadastroComponent',
@@ -207,7 +208,7 @@ export default {
       }
       this.registerLoading = true;
       try {
-        await axios.post('http://localhost:3000/usuarios', {
+        await criarUsuario({
           nome: this.registerForm.nome,
           sobrenome: this.registerForm.sobrenome,
           email: this.registerForm.email,

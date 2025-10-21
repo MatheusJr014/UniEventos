@@ -84,24 +84,11 @@ export default {
             const payload = { 
                 email: this.email,
                 senha: this.senha
-
             }; 
-            try{
-                const response = await fetch (`http://localhost:3000/login`, {
-                    method: 'POST', 
-                    headers: {
-                        'Content-Type': 'application/json' 
-                    },
-                    body: JSON.stringify(payload)
-                }); 
-                if (!response.ok) {
-                    if (response.status === 401) {
-                        throw new Error('Credenciais inválidas. Verifique seu email ou senha.');
-                    }
-                    throw new Error(`Erro ao fazer login. Código: ${response.status}`);
-                }
-
-                const res = await response.json(); 
+            
+            try {
+                const res = await loginUsuario(payload);
+                
                 const token = res.token;  
                 if (token) {
                     localStorage.setItem('token', token); // Salva o token no localStorage
@@ -119,13 +106,18 @@ export default {
                 }
             }catch(error){
                 console.error('Erro na requisição:', error);
+                
+                if (error.response?.status === 401) {
+                    error.message = 'Credenciais inválidas. Verifique seu email ou senha.';
+                }
+                
                 Swal.fire({
                     icon: 'error',
                     title: 'Erro no login',
                     text: error.message || 'Ocorreu um erro ao tentar fazer login. Tente novamente.',
                     confirmButtonColor: '#dc3545'
                 });
-            } finally{
+            } finally {
                 this.loginLoading = false; 
             }
         },

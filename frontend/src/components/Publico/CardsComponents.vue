@@ -46,6 +46,8 @@
   </div>
 </template>
 <script>
+import { getEventos, getIngressos } from '@/services/api';
+
 export default {
   name: 'ConectaEventosLandingPage',
   data() {
@@ -96,13 +98,11 @@ export default {
      async fetchEvents() {
       this.isLoading = true;
       try {
-        const eventsResponse = await fetch("http://localhost:3000/eventos");
+        const eventsResponse = await getEventos();
         if (!eventsResponse.ok) throw new Error("Erro ao carregar eventos");
         const eventos = await eventsResponse.json();
 
-        const ingressosResponse = await fetch(
-          "http://localhost:3000/ingressos"
-        );
+        const ingressosResponse = await getIngressos();
         if (!ingressosResponse.ok)
           throw new Error("Erro ao carregar ingressos");
         const ingressos = await ingressosResponse.json();
