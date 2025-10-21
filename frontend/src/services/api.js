@@ -103,4 +103,19 @@ export const loginUsuario = async (payload) => {
   }
 };
 
+export const getIngressosPorEvento = async (eventoId) => {
+  const { data } = await api.get(`/ingressos?EventoId=${eventoId}`);
+  return data;
+};
+
+export const getEventoCompletoById = async (id) => {
+  const { data } = await api.get(`/eventos/${id}`);
+  return data;
+};
+
+export const getEventoDetalhadoById = async (id) => {
+  const { data } = await api.get(`/eventos/${id}`);
+  return data;
+};
+
 export default api;

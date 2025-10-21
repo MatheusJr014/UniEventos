@@ -85,6 +85,8 @@
 </template>
 
 <script>
+import { getIngressosPorEvento } from '@/services/api';
+
 export default {
   name: "SideBarEvent",
   props: {
@@ -108,7 +110,8 @@ export default {
     async fetchTickets() {
       try {
         this.loading = true;
-        const response = await fetch(`http://localhost:3000/ingressos?EventoId=${this.eventId}`);
+        const response = await getIngressosPorEvento(this.eventId);
+
         if (!response.ok) throw new Error('Erro ao carregar ingressos');
         
         const data = await response.json();
