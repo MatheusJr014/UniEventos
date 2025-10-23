@@ -1,12 +1,12 @@
 import { createRouter, createWebHistory } from "vue-router";
-import HomeView from "../views/HomeView.vue";
-import EventoView from "@/views/EventoView.vue";
-import AdminView from "@/views/AdminView.vue";
-import UsuarioView from "@/views/UsuarioView.vue";
-import EventosListView from "@/views/EventosListView.vue";
+import HomeView from "../views/Publico/HomeView.vue";
+import EventoView from "@/views/Publico/EventoView.vue";
+import AdminView from "@/views/Admin/AdminView.vue";
+import UsuarioView from "@/views/User/UsuarioView.vue";
+import EventosListView from "@/views/Publico/EventosListView.vue";
 import GuardAdmin from '../middleware/Auths'; 
-import LoginAndCadastroView from "@/views/LoginAndCadastroView.vue";
-import MaintenancePage from "@/components/Publico/404ErrorDev.vue";
+import LoginAndCadastroView from "@/views/Publico/LoginAndCadastroView.vue";
+import MaintenancePage from "@/components/Publico/common/404ErrorDev.vue";
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -130,12 +130,12 @@ const router = createRouter({
           path: 'dashboard',
           name: 'admin-dashboard',
           component: AdminView
-        },
-        {
-          path: 'teste',
-          name: 'teste', 
-          component: () => import('../components/admin/AdminComponent.vue')
         }
+        // {
+        //   path: 'teste',
+        //   name: 'teste', 
+        //   component: () => import('../components/admin/AdminComponent.vue')
+        // }
       ]
     }
   ],

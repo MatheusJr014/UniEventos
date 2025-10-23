@@ -885,7 +885,7 @@
 </template>
 
 <script>
-import NavBarComponents from "@/components/Publico/NavBarComponents.vue";
+import NavBarComponents from "@/components/Publico/common/NavBarComponents.vue";
 import { getEventos, getIngressos } from "@/services/api";
 
 export default {

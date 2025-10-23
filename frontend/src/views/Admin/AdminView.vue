@@ -5,8 +5,8 @@
     </div>
 </template>
 <script>
-import FooterComponents from '@/components/Publico/FooterComponents.vue';
-import AdminComponent from '@/components/admin/AdminComponent.vue';
+import FooterComponents from '@/components/Publico/common/FooterComponents.vue';
+import AdminComponent from '@/components/Admin/AdminComponent.vue';
 
 
 export default {

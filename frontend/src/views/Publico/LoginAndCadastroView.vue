@@ -6,9 +6,9 @@
     </div>
 </template>
 <script>
-import NavBarComponents from '@/components/Publico/NavBarComponents.vue';
-import MainComponent from '@/components/loginEcadastro/MainComponent.vue';
-import FooterComponents from '@/components/Publico/FooterComponents.vue';
+import NavBarComponents from "@/components/Publico/common/NavBarComponents.vue";
+import MainComponent from '@/components/Publico/loginEcadastro/MainComponent.vue';
+import FooterComponents from '@/components/Publico/common/FooterComponents.vue';
 
 
 export default {

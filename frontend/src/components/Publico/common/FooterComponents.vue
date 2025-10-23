@@ -5,7 +5,7 @@
                 <div class="row g-4">
                     <div class="col-lg-3 col-md-6">
                         <div class="mb-4">
-                            <img src="../../assets/logo.svg"
+                            <img src="../../../assets/logo.svg"
                                 alt="Conecta Eventos Logo" height="120" class="mb-3">
                             <p class="text-muted small">
                                 A melhor plataforma para encontrar e promover eventos no Brasil.
