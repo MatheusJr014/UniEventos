@@ -5,7 +5,7 @@
         <nav class="navbar navbar-expand-lg navbar-light py-2">
           <div class="container-fluid">
             <router-link to="/" class="navbar-brand d-flex align-items-center" href="#">
-              <img src="../../assets/logo.svg" alt="Conecta Eventos Logo" height="115" class="me-2">
+              <img src="../../../assets/logo.svg" alt="Conecta Eventos Logo" height="115" class="me-2">
             </router-link>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
               <span class="navbar-toggler-icon"></span>

@@ -68,8 +68,8 @@
 
 <script>
 
-import LoginComponent from '@/components/loginEcadastro/LoginComponent.vue';
-import CadastroComponent from '@/components/loginEcadastro/CadastroComponent.vue';
+import LoginComponent from '@/components/Publico/loginEcadastro/Login/LoginComponent.vue';
+import CadastroComponent from '@/components/Publico/loginEcadastro/Cadastro/CadastroComponent.vue';
 export default {
     name: 'MainComponent',
     components: {

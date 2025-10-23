@@ -9,10 +9,10 @@
 
 
 <script>
-import FooterComponents from '@/components/Publico/FooterComponents.vue';
-import HomeComponents from '@/components/Publico/HomeComponents.vue';
-import CardsComponents from '@/components/Publico/CardsComponents.vue';
-import NavBarComponents from '@/components/Publico/NavBarComponents.vue';
+import FooterComponents from '@/components/Publico/common/FooterComponents.vue';
+import HomeComponents from '@/components/Publico/Home/HomeComponents.vue';
+import CardsComponents from '@/components/Publico/Home/CardsComponents.vue';
+import NavBarComponents from '@/components/Publico/common/NavBarComponents.vue';
 
 export default {
   components: {
