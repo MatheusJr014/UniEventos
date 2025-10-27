@@ -2,6 +2,12 @@ const { DataTypes } = require('sequelize');
 
 module.exports = (sequelize) => {
   return sequelize.define('Evento', {
+    id: {
+      type: DataTypes.INTEGER,
+      primaryKey: true,
+      autoIncrement: true,
+      allowNull: false
+    },
     nomeevento: DataTypes.STRING,
     descricao: DataTypes.TEXT,
     datainicio: DataTypes.DATEONLY,
