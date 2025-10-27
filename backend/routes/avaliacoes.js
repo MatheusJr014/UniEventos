@@ -8,7 +8,7 @@ router.get('/:id', avaliacoesController.getAvaliacaoById);
 
 router.post('/', authMiddleware, avaliacoesController.createAvaliacao); 
 router.delete('/:id', authMiddleware, avaliacoesController.deleteAvaliacao);
-router.put('/:id', authMiddleware, avaliacoesController.deleteAvaliacao);
+router.put('/:id', authMiddleware, avaliacoesController.updateAvaliacao);
 
 
 module.exports = router; 
