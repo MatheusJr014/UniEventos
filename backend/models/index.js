@@ -1,16 +1,23 @@
 const { Sequelize } = require('sequelize');
+let sequelize;
 
-const sequelize = new Sequelize(
-  process.env.DB_NAME || 'AgendaTech',
-  process.env.DB_USER || 'postgres',
-  process.env.DB_PASS || 'felipe',
-  {
-    host: process.env.DB_HOST || 'localhost',
-    port: process.env.DB_PORT || 5432,
-    dialect: 'postgres',
+if (process.env.NODE_ENV === 'test') {
+  sequelize = new Sequelize('sqlite::memory:', {
     logging: false
-  }
-);
+  });
+} else {
+  sequelize = new Sequelize(
+    process.env.DB_NAME || 'AgendaTech',
+    process.env.DB_USER || 'postgres',
+    process.env.DB_PASS || 'felipe',
+    {
+      host: process.env.DB_HOST || 'localhost',
+      port: process.env.DB_PORT || 5432,
+      dialect: 'postgres',
+      logging: false
+    }
+  );
+}
 
 const Usuario = require('./usuario')(sequelize);
 const Evento = require('./evento')(sequelize);

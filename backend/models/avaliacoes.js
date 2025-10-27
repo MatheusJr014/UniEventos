@@ -8,7 +8,7 @@ module.exports = (sequelize) => {
       autoIncrement: true,
       allowNull: false
     },
-    // ID USUARIO FK
+    
     UsuarioId: {
       type: DataTypes.INTEGER,
       allowNull: false,
@@ -17,7 +17,7 @@ module.exports = (sequelize) => {
         key: 'id'
       }
     },
-    // ID EVENTO FK
+
     EventoId: {
       type: DataTypes.INTEGER,
       allowNull: false,
@@ -26,6 +26,7 @@ module.exports = (sequelize) => {
         key: 'id'
       }
     },
+
     nota: DataTypes.INTEGER,
     comentario: DataTypes.TEXT,
     dataavaliacao: DataTypes.DATE 

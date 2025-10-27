@@ -1,6 +1,5 @@
-// Arquivo: loginController.js
 const { Usuario } = require('../models'); 
-const bcrypt = require('bcryptjs'); // Você vai precisar dele aqui
+const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken'); 
 const JWT_SECRET = process.env.JWT_SECRET;
 
