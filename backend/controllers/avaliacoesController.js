@@ -31,9 +31,32 @@ exports.createAvaliacao = async (req, res) => {
 };
 
 exports.deleteAvaliacao = async (req,res) => {
-    const deleted = await Avaliacoes.destroy({ where: {id: req.params.id}});
-    if(deleted) return res.json({ message: 'Avaliação Removida' }); 
-    res.status(404).json({ error: 'Avaliação não encontrada '}); 
+  try {
+    const { id } = req.params;
+    const UsuarioId = req.user.id;
+
+    const deleted = await Avaliacoes.destroy({ 
+      where: {
+        id: id,
+        UsuarioId: UsuarioId
+      }
+    });
+
+    if (deleted) {
+      return res.status(200).json({ message: 'Avaliação Removida' }); 
+    }
+    
+    const avaliacao = await Avaliacoes.findByPk(id);
+    if (!avaliacao) {
+      return res.status(404).json({ error: 'Avaliação não encontrada' });
+    } else {
+      return res.status(403).json({ error: 'Acesso negado. Você não pode deletar esta avaliação.' });
+    }
+
+  } catch (error) {
+    console.error("Erro ao deletar avaliação:", error);
+    res.status(500).json({ error: "Erro interno" });
+  }
 };
 
 exports.updateAvaliacao = async (req, res) => {
@@ -42,22 +65,27 @@ exports.updateAvaliacao = async (req, res) => {
     const UsuarioId = req.user.id;
     const { nota, comentario } = req.body;
 
-    const avaliacao = await Avaliacoes.findByPk(id);
+    const [updated] = await Avaliacoes.update(
+      { nota, comentario },
+      { 
+        where: { 
+          id: id, 
+          UsuarioId: UsuarioId
+        } 
+      }
+    );
 
+    if (updated) {
+      const avaliacaoAtualizada = await Avaliacoes.findByPk(id);
+      return res.status(200).json(avaliacaoAtualizada);
+    }
+
+    const avaliacao = await Avaliacoes.findByPk(id);
     if (!avaliacao) {
       return res.status(404).json({ error: 'Avaliação não encontrada' });
-    }
-
-    if (avaliacao.UsuarioId !== UsuarioId) {
+    } else {
       return res.status(403).json({ error: 'Acesso negado. Você não pode editar esta avaliação.' });
     }
-
-    avaliacao.nota = nota ?? avaliacao.nota;
-    avaliacao.comentario = comentario ?? avaliacao.comentario;
-    
-    await avaliacao.save();
-    
-    res.json(avaliacao);
 
   } catch (error) {
     console.error("Erro ao atualizar avaliação:", error);
