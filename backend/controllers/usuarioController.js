@@ -12,8 +12,30 @@ exports.getUsuarioById = async (req, res) => {
 };
 
 exports.createUsuario = async (req, res) => {
-  const novoUsuario = await Usuario.create(req.body);
-  res.status(201).json(novoUsuario);
+  try {
+    const { nome, sobrenome, email, cpf, senha } = req.body;
+
+    const tipouser = false; 
+
+    const novoUsuario = await Usuario.create({
+      nome,
+      sobrenome,
+      email,
+      cpf,
+      senha,
+      tipouser 
+    });
+    
+    const { senha: _, ...usuarioSemSenha } = novoUsuario.toJSON();
+    res.status(201).json(usuarioSemSenha);
+
+  } catch (error) {
+    console.error("Erro ao criar usuário:", error);
+    if (error.name === 'SequelizeUniqueConstraintError') {
+      return res.status(400).json({ error: 'Email ou CPF já cadastrado.' });
+    }
+    res.status(500).json({ error: 'Erro ao criar usuário.' });
+  }
 };
 
 exports.updateUsuario = async (req, res) => {
