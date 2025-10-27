@@ -11,9 +11,20 @@ module.exports = (sequelize) => {
     },
     nome: DataTypes.STRING,
     sobrenome: DataTypes.STRING,
-    email: DataTypes.STRING, 
-    cpf: DataTypes.STRING, 
-    senha: DataTypes.STRING,
+    email: {
+      type: DataTypes.STRING,
+      allowNull: false,
+      unique: true,
+      validate: {
+        isEmail: true
+      }
+    }, 
+    cpf: {
+      type: DataTypes.STRING, 
+      allowNull: false,
+      unique: true
+    }, 
+    senha: DataTypes.STRING, 
     tipouser: DataTypes.BOOLEAN, 
   }, {
     hooks: {
