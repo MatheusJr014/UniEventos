@@ -1,11 +1,14 @@
 const express = require('express'); 
 const router = express.Router(); 
-const avalicoesController = require('../controllers/avaliacoesController');
+const avaliacoesController = require('../controllers/avaliacoesController');
+const authMiddleware = require('../middleware/auth');
 
-router.get('/', avalicoesController.getAllAvaliacoes); 
-router.get('/:id', avalicoesController.getAvaliacaoById); 
-router.post('/', avalicoesController.createAvaliacao); 
-router.delete('/:id', avalicoesController.deleteAvaliacao); 
+router.get('/', avaliacoesController.getAllAvaliacoes); 
+router.get('/:id', avaliacoesController.getAvaliacaoById);
+
+router.post('/', authMiddleware, avaliacoesController.createAvaliacao); 
+router.delete('/:id', authMiddleware, avaliacoesController.deleteAvaliacao);
+router.put('/:id', authMiddleware, avaliacoesController.deleteAvaliacao);
 
 
 module.exports = router; 

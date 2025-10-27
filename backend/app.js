@@ -16,7 +16,6 @@ app.use('/eventos', require('./routes/eventos'));
 app.use('/ingressos', require('./routes/ingressos'));
 app.use('/compras', require('./routes/compras')); 
 app.use('/avaliacoes', require('./routes/avaliacoes')); 
-
 app.use('/login', require('./routes/login'));
 
 sequelize.sync({ alter: true })
