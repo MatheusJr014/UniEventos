@@ -17,23 +17,28 @@ const Evento = require('./evento')(sequelize);
 const Ingresso = require('./ingresso')(sequelize);
 const Compras = require('./compras')(sequelize); 
 const Avaliacoes = require('./avaliacoes')(sequelize); 
-
+const Relatorio = require('./relatorio')(sequelize);
 Usuario.hasMany(Evento, { foreignKey: 'OrganizadorId' });
 Evento.belongsTo(Usuario, { as: 'Organizador', foreignKey: 'OrganizadorId' });
 
 Evento.hasMany(Ingresso, { foreignKey: 'EventoId' });
 Ingresso.belongsTo(Evento, { foreignKey: 'EventoId' });
 
-Usuario.hasMany(Compras, { foreignKey: 'UsuarioId' });
-Compras.belongsTo(Usuario, { foreignKey: 'UsuarioId' });
 
-Ingresso.hasMany(Compras, { foreignKey: 'IngressoId' });
-Compras.belongsTo(Ingresso, { foreignKey: 'IngressoId' });
+Ingresso.belongsTo(Usuario);
+// Ingresso.belongsTo(Evento);
+Usuario.hasMany(Ingresso);
+// Evento.hasMany(Ingresso);
 
-Usuario.hasMany(Avaliacoes, { foreignKey: 'UsuarioId' });
-Avaliacoes.belongsTo(Usuario, { foreignKey: 'UsuarioId' });
 
-Evento.hasMany(Avaliacoes, { foreignKey: 'EventoId' });
-Avaliacoes.belongsTo(Evento, { foreignKey: 'EventoId' });
+Usuario.hasMany(Compras);
+Compras.belongsTo(Ingresso);
+
+
+
+
+
+
+
 
 module.exports = { sequelize, Usuario, Evento, Ingresso, Compras, Avaliacoes };
