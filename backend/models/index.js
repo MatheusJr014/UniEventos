@@ -17,7 +17,7 @@ const Evento = require('./evento')(sequelize);
 const Ingresso = require('./ingresso')(sequelize);
 const Compras = require('./compras')(sequelize); 
 const Avaliacoes = require('./avaliacoes')(sequelize); 
-
+const Relatorio = require('./relatorio')(sequelize);
 
 
 // // Usuario -> Evento 
@@ -34,15 +34,13 @@ Ingresso.belongsTo(Usuario);
 Usuario.hasMany(Ingresso);
 // Evento.hasMany(Ingresso);
 
-
 Usuario.hasMany(Compras);
 Compras.belongsTo(Ingresso);
 
+Usuario.hasMany(Relatorio, { foreignKey: 'UsuarioId' });
+Relatorio.belongsTo(Usuario, { foreignKey: 'UsuarioId' });
 
+Evento.hasMany(Relatorio, { foreignKey: 'EventoId' });
+Relatorio.belongsTo(Evento, { foreignKey: 'EventoId' });
 
-
-
-
-
-
-module.exports = { sequelize, Usuario, Evento, Ingresso, Compras, Avaliacoes };
+module.exports = { sequelize, Usuario, Evento, Ingresso, Compras, Avaliacoes, Relatorio };
