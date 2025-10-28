@@ -57,7 +57,7 @@ Para garantir a integridade de todos os endpoints, uma suíte de testes de integ
 npm test
 ```
 
-## 🗺️ Estrutura do Projeto
+## Estrutura do Projeto
 
 ```
 /backend
@@ -94,6 +94,3 @@ npm test
 |-- server.js          # Ponto de entrada que inicia o servidor
 |-- package.json
 ```
-
-  * `POST /relatorios`: **(Rota Autenticada)** Gera um novo relatório. O controlador busca dados das compras (`FINANCEIRO_EVENTO`) e salva um sumário.
-  * `GET /relatorios`: **(Rota Autenticada)** Lista todos os relatórios gerados.
