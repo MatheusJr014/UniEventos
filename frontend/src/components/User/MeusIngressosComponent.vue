@@ -1,94 +1,61 @@
 <template>
-      <header class="sticky-top bg-white border-bottom">
-    <div class="container">
-      <nav class="navbar navbar-expand-lg navbar-light py-2">
-        <div class="container-fluid">
-          <a class="navbar-brand d-flex align-items-center" href="#">
-            <img
-              src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/LogoConecta-SNoUxrSWP8iTB6IvwaQcweuJEgUJxa.png"
-              alt="Conecta Eventos Logo"
-              height="40"
-              class="me-2"
-            />
-          </a>
-          <button
-            class="navbar-toggler"
-            type="button"
-            data-bs-toggle="collapse"
-            data-bs-target="#navbarNav"
-          >
-            <span class="navbar-toggler-icon"></span>
-          </button>
-          <div class="collapse navbar-collapse" id="navbarNav">
-            <ul class="navbar-nav mx-auto">
-              <li class="nav-item">
-                <a class="nav-link" href="#">Eventos</a>
-              </li>
-              <li class="nav-item">
-                <a class="nav-link" href="#">Categorias</a>
-              </li>
-              <li class="nav-item">
-                <a class="nav-link" href="#">Para Organizadores</a>
-              </li>
-              <li class="nav-item">
-                <a class="nav-link" href="#">Sobre</a>
-              </li>
-              <li class="nav-item">
-                <a class="nav-link" href="#">Contato</a>
-              </li>
-            </ul>
-            <div class="d-flex align-items-center">
-              <div class="dropdown">
-                <a
-                  href="#"
-                  class="d-flex align-items-center text-decoration-none dropdown-toggle"
-                  id="userDropdown"
-                  data-bs-toggle="dropdown"
-                  aria-expanded="false"
-                >
-                  <img
-                    src="https://placehold.co/100x100"
-                    alt="User Avatar"
-                    class="rounded-circle me-2"
-                    width="32"
-                    height="32"
-                  />
-                  <span class="d-none d-sm-inline">{{ userName }}</span>
-                </a>
-                <ul
-                  class="dropdown-menu dropdown-menu-end"
-                  aria-labelledby="userDropdown"
-                >
-                  <li>
-                    <a class="dropdown-item active" href="#"
-                      ><i class="bi bi-person me-2"></i>Meu Perfil</a
-                    >
-                  </li>
-                  <li>
-                    <a class="dropdown-item" href="#"
-                      ><i class="bi bi-ticket-perforated me-2"></i>Meus
-                      Ingressos</a
-                    >
-                  </li>
-                  <li>
-                    <a class="dropdown-item" href="#"
-                      ><i class="bi bi-heart me-2"></i>Favoritos</a
-                    >
-                  </li>
-                  <li><hr class="dropdown-divider" /></li>
-                  <li>
-                    <a class="dropdown-item" href="#"
-                      ><i class="bi bi-box-arrow-right me-2"></i>Sair</a
-                    >
-                  </li>
-                </ul>
+    <header class="sticky-top bg-white border-bottom">
+      <div class="container">
+        <nav class="navbar navbar-expand-lg navbar-light py-2">
+          <div class="container-fluid">
+            <router-link to="/" class="navbar-brand d-flex align-items-center" href="#">
+              <img src="../../assets/logo.svg" alt="Conecta Eventos Logo" height="115" class="me-2">
+            </router-link>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+              <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+              <ul class="navbar-nav mx-auto">
+                <li class="nav-item">
+                  <router-link to="/eventos" class="nav-link">Eventos</router-link>
+                </li>
+                <li class="nav-item">
+                  <router-link to="/404" class="nav-link">Categorias</router-link>
+                </li>
+                <li class="nav-item">
+                  <router-link to="/404" class="nav-link">Para Organizadores</router-link>
+                </li>
+                <li class="nav-item">
+                  <router-link to="/404" class="nav-link">Sobre</router-link>
+                </li>
+                <li class="nav-item">
+                  <router-link to="/404" class="nav-link">Contato</router-link>
+                </li>
+              </ul>
+              <div class="d-flex" v-if="!isLoggedIn">
+                <router-link to="/auth/login" class="btn me-2 d-none d-sm-inline">Entrar</router-link>
+                <router-link to="/auth/login" class="btn btn-primary">Cadastrar</router-link>
+              </div>
+              <div class="d-flex align-items-center" v-else>
+                <div class="dropdown">
+                  <a href="#" class="d-flex align-items-center text-decoration-none dropdown-toggle" id="userDropdown"
+                    data-bs-toggle="dropdown" aria-expanded="false">
+                    <img src="https://placehold.co/100x100" alt="User Avatar" class="rounded-circle me-2" width="32"
+                      height="32">
+                    <span class="d-none d-sm-inline">{{ userData.nome }}</span>
+                  </a>
+                  <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
+                    <li><router-link to="/usuario/perfil" class="dropdown-item active"><i class="bi bi-person me-2"></i>Meu Perfil</router-link></li>
+                    <li><router-link to="/usuario/ingressos" class="dropdown-item"><i class="bi bi-ticket-perforated me-2"></i>Meus Ingressos</router-link>
+                    </li>
+                    <li><router-link to="/usuario/historico" class="dropdown-item"><i class="bi bi-heart me-2"></i>Favoritos</router-link></li>
+                    <li>
+                      <hr class="dropdown-divider">
+                    </li>
+                    <li><a class="dropdown-item" href="#" @click="logout"><i class="bi bi-box-arrow-right me-2"></i>Sair</a></li>
+                  </ul>
+                </div>
               </div>
             </div>
           </div>
-        </div>
-      </nav>
-    </div>
-  </header>
+        </nav>
+      </div>
+    </header>
     <section class="py-4">
       <div class="container">
         <div class="d-flex justify-content-between align-items-center mb-3">
@@ -171,12 +138,43 @@ export default {
       statusFilter: 'all',
       showQr: false,
       currentIngress: null
+      ,
+      userName: '',
+      // header/login state
+      isLoggedIn: false,
+      userData: {}
     };
   },
   mounted() {
+    this.checkLoginStatus();
     this.fetchIngressos();
   },
   methods: {
+    checkLoginStatus() {
+      const token = localStorage.getItem('token');
+      if (!token) return;
+      try {
+        const decoded = decodeJwt(token) || {};
+        this.userData = {
+          id: decoded.Id || decoded.id || decoded.userId || decoded.sub,
+          nome: decoded.nome || decoded.name || decoded.email || ''
+        };
+        this.userName = this.userData.nome || '';
+        this.isLoggedIn = true;
+      } catch (err) {
+        console.error('Erro ao decodificar token no header', err);
+        this.isLoggedIn = false;
+        this.userData = {};
+      }
+    },
+    logout() {
+      localStorage.removeItem('token');
+      this.isLoggedIn = false;
+      this.userData = {};
+      this.userName = '';
+      // redirect to login
+      if (this.$router) this.$router.push('/auth/login');
+    },
     async fetchIngressos() {
       this.loading = true;
       const token = localStorage.getItem('token');
@@ -188,8 +186,9 @@ export default {
 
       let userId = null;
       try {
-        const decoded = decodeJwt(token);
+        const decoded = decodeJwt(token) || {};
         userId = decoded?.id || decoded?.userId || decoded?.sub;
+        this.userName = decoded.nome || decoded.name || decoded.email || '';
       } catch (err) {
         console.error('Erro ao decodificar token', err);
       }
