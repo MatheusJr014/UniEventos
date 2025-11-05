@@ -1,0 +1,69 @@
+# Reunião de Retrospectiva do Sprint  
+
+**Tema:** Retrospectiva do Sprint 3  
+**Data:** 04/11/2025  
+**Participantes:** Felipe Araujo, Matheus Junior dos Santos e Pedro Miguel Bonini  
+
+---
+
+## Objetivo  
+
+Analisar o progresso das ações definidas na última retrospectiva, identificar os motivos para o andamento atual das atividades e planejar as próximas etapas visando a melhoria contínua do time e do projeto.  
+
+---
+
+## 1. Situação das Ações do Sprint Anterior  
+
+### 📊 Ação 1: Definição de Campos para Dashboard do Produtor  
+- **Responsável:** Felipe Araujo  
+- **Status:** Em andamento  
+- **Descrição:** Identificar e estruturar os campos necessários para o relatório do dashboard do produtor.  
+- **Justificativa:** A ação permanece em execução devido à necessidade de alinhamento entre as equipes de frontend e backend para garantir a coerência dos dados e a integração correta com o modelo de relatórios.  
+
+---
+
+### 🔍 Ação 2: Mapeamento de Integração com Google Analytics  
+- **Responsável:** Pedro Miguel Bonini  
+- **Status:** Em andamento  
+- **Descrição:** Investigar e documentar o processo de integração com Google Analytics (fase de planejamento, sem implementação).  
+- **Justificativa:** Apesar do progresso realizado, a entrega ainda não foi concluída devido à **alta demanda de serviços extras** e **atividades relacionadas a outras matérias**, impactando o tempo disponível para finalizar o planejamento da integração.  
+
+---
+
+### 🎨 Ação 3: Mapeamento de Novas Telas no Frontend  
+- **Responsável:** Matheus Junior dos Santos  
+- **Status:** Em andamento  
+- **Descrição:** Estruturar e mapear as novas telas que serão desenvolvidas no frontend.  
+- **Justificativa:** A atividade segue em andamento pelo mesmo motivo — **sobrecarga de demandas externas** e **trabalhos de outras disciplinas** que reduziram o tempo de dedicação ao projeto nesta semana.  
+
+---
+
+## 2. Pontos de Atenção  
+
+- **Gerenciamento de tempo:** Necessário equilibrar as demandas externas e as atividades do projeto para evitar atrasos recorrentes.  
+- **Comunicação e alinhamento:** Importante reforçar as reuniões curtas de acompanhamento para garantir que todos os integrantes estejam cientes do progresso e das dependências entre tarefas.  
+
+---
+
+## 3. Plano de Ação para o Próximo Sprint  
+
+### 📋 Ação 1: Conclusão do Mapeamento de Telas do Frontend  
+- **Responsável:** Matheus Junior dos Santos  
+- **Nova Entrega Prevista:** 11/11/2025  
+- **Objetivo:** Finalizar a estrutura e o mapeamento das telas pendentes.  
+
+### 📊 Ação 2: Conclusão do Planejamento da Integração com Google Analytics  
+- **Responsável:** Pedro Miguel Bonini  
+- **Nova Entrega Prevista:** 11/11/2025  
+- **Objetivo:** Concluir o documento de planejamento da integração e apresentar as diretrizes técnicas à equipe.  
+
+### ⚙️ Ação 3: Finalização da Estrutura de Campos para Dashboard do Produtor  
+- **Responsável:** Felipe Araujo  
+- **Nova Entrega Prevista:** 11/11/2025  
+- **Objetivo:** Finalizar a definição de campos e iniciar a documentação para futura implementação do dashboard.  
+
+---
+
+## 📌 Observações Finais  
+
+O time demonstra comprometimento com as entregas e qualidade do trabalho, mesmo diante da alta demanda acadêmica. É essencial manter o ritmo de execução e reforçar o foco nas entregas planejadas para o próximo sprint, garantindo a continuidade e o avanço consistente do projeto.
