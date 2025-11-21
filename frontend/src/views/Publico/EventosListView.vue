@@ -597,52 +597,6 @@
                 </div>
               </div>
 
-              <!-- Map View Event List -->
-              <div v-if="viewMode === 'map'" class="row g-4 mt-4">
-                <div
-                  v-for="(event, index) in paginatedEvents"
-                  :key="index"
-                  class="col-md-6"
-                >
-                  <div class="card h-100 border-0 shadow-sm hover-card">
-                    <div class="row g-0">
-                      <div class="col-4">
-                        <img
-                          :src="event.image"
-                          :alt="event.name"
-                          class="img-fluid rounded-start h-100"
-                          style="object-fit: cover"
-                        />
-                      </div>
-                      <div class="col-8">
-                        <div class="card-body">
-                          <h6 class="card-title">{{ event.name }}</h6>
-                          <div
-                            class="d-flex align-items-center text-muted mb-2 small"
-                          >
-                            <i class="bi bi-calendar-event me-2"></i>
-                            <span>{{ event.date }}</span>
-                          </div>
-                          <div
-                            class="d-flex align-items-center text-muted mb-2 small"
-                          >
-                            <i class="bi bi-geo-alt me-2"></i>
-                            <span>{{ event.location }}</span>
-                          </div>
-                          <div class="fw-bold small">
-                            {{
-                              event.price === 0
-                                ? "Grátis"
-                                : `R$ ${event.price.toFixed(2)}`
-                            }}
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
               <!-- No Results -->
               <div
                 v-if="!isLoading && events.length === 0"
@@ -931,12 +885,17 @@ export default {
         "Porto Alegre",
       ],
       events: [],
+      isLoading: false,
+      error: null,
     };
   },
   computed: {
     filteredEvents() {
       let result = this.events.filter(
-        (event) => event.nomeevento && event.status === "ativo"
+        (event) =>
+          event.nomeevento &&
+          (!event.status ||
+            String(event.status).toLowerCase().trim() === "ativo")
       );
 
       if (this.searchQuery) {
