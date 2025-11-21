@@ -110,11 +110,9 @@ export default {
     async fetchTickets() {
       try {
         this.loading = true;
-        const response = await getIngressosPorEvento(this.eventId);
+        // getIngressosPorEvento já retorna o JSON (axios)
+        const data = await getIngressosPorEvento(this.eventId);
 
-        if (!response.ok) throw new Error('Erro ao carregar ingressos');
-        
-        const data = await response.json();
         this.tickets = data.map(ticket => ({
           ...ticket,
           quantidade: 0,

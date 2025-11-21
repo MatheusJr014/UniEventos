@@ -92,39 +92,46 @@ export default {
           role: "Cliente",
         },
       ],
+      isLoading: false,
+      error: null,
     };
   },
   methods: {
-     async fetchEvents() {
+    async fetchEvents() {
       this.isLoading = true;
       try {
-        const eventsResponse = await getEventos();
-        if (!eventsResponse.ok) throw new Error("Erro ao carregar eventos");
-        const eventos = await eventsResponse.json();
+        // getEventos e getIngressos já retornam o JSON (axios)
+        const eventos = await getEventos();
+        const ingressos = await getIngressos();
 
-        const ingressosResponse = await getIngressos();
-        if (!ingressosResponse.ok)
-          throw new Error("Erro ao carregar ingressos");
-        const ingressos = await ingressosResponse.json();
-
-        this.events = eventos.map((evento) => {
+        const eventosComIngressos = eventos.map((evento) => {
           const ingressosDoEvento = ingressos.filter(
             (ingresso) => ingresso.EventoId === evento.id
           );
+
+          const precoMinimo =
+            ingressosDoEvento.length > 0
+              ? Math.min(...ingressosDoEvento.map((i) => parseFloat(i.preco)))
+              : 0;
+
           return {
             ...evento,
             ingressos: ingressosDoEvento,
-            precoMinimo:
-              ingressosDoEvento.length > 0
-                ? Math.min(...ingressosDoEvento.map((i) => parseFloat(i.preco)))
-                : 0,
+            precoMinimo,
           };
+        });
+
+        // Exibir apenas eventos ativos, se vierem com status
+        this.events = eventosComIngressos.filter((e) => {
+          if (!e.status) return true;
+          const s = String(e.status).toLowerCase();
+          return s === 'ativo' || s === 'ativo ';
         });
 
         this.error = null;
       } catch (err) {
-        console.error("Erro na API:", err);
-        this.error = "Não foi possível carregar os dados";
+        console.error('Erro na API:', err);
+        this.error = 'Não foi possível carregar os eventos em destaque.';
       } finally {
         this.isLoading = false;
       }
@@ -145,7 +152,8 @@ export default {
       return timeString.substring(0, 5);
     },
     formatPrice(price) {
-      return parseFloat(price).toFixed(2).replace(".", ",");
+      const n = Number(price || 0);
+      return n.toFixed(2).replace('.', ',');
     },
   },
   created() {
@@ -153,3 +161,4 @@ export default {
   },
 };
 </script>
+

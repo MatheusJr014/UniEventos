@@ -38,7 +38,12 @@
                       : `R$ ${relatedEvent.price.toFixed(2)}`
                   }}
                 </div>
-                <a href="#" class="btn btn-sm btn-secondary">Ver Detalhes</a>
+                <router-link
+                  :to="{ name: 'evento-detalhes', params: { id: relatedEvent.id } }"
+                  class="btn btn-sm btn-secondary"
+                >
+                  Ver Detalhes
+                </router-link>
               </div>
             </div>
           </div>

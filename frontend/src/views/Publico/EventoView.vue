@@ -4,33 +4,45 @@
     <NavBarComponents />
 
     <main>
-      <!-- Breadcrumb -->
-      <div class="bg-light py-2">
+      <!-- Loading / Erro -->
+      <section v-if="loading" class="py-5 text-center">
         <div class="container">
-          <nav aria-label="breadcrumb">
-            <ol class="breadcrumb mb-0">
-              <li class="breadcrumb-item">
-                <a href="#" class="text-decoration-none">Início</a>
-              </li>
-              <li class="breadcrumb-item">
-                <a href="#" class="text-decoration-none">Eventos</a>
-              </li>
-              <li class="breadcrumb-item">
-                <a href="#" class="text-decoration-none">{{
-                  evento.category
-                }}</a>
-              </li>
-              <li class="breadcrumb-item active" aria-current="page">
-                {{ evento.title }}
-              </li>
-            </ol>
-          </nav>
+          <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Carregando...</span>
+          </div>
         </div>
-      </div>
+      </section>
 
-      <!-- Event Hero Section -->
-      <section class="py-4">
+      <section v-else-if="error" class="py-5 text-center">
         <div class="container">
+          <h2 class="h4 mb-3">Não foi possível carregar o evento</h2>
+          <p class="text-muted">{{ error }}</p>
+        </div>
+      </section>
+
+      <section v-else-if="evento" class="pb-5">
+        <!-- Breadcrumb -->
+        <div class="bg-light py-2">
+          <div class="container">
+            <nav aria-label="breadcrumb">
+              <ol class="breadcrumb mb-0">
+                <li class="breadcrumb-item">
+                  <a href="#" class="text-decoration-none">Início</a>
+                </li>
+                <li class="breadcrumb-item">
+                  <a href="#" class="text-decoration-none">Eventos</a>
+                </li>
+                <li class="breadcrumb-item active" aria-current="page">
+                  {{ evento.nomeevento }}
+                </li>
+              </ol>
+            </nav>
+          </div>
+        </div>
+
+        <!-- Event Hero Section -->
+        <section class="py-4">
+          <div class="container">
           <div class="row">
             <div class="col-lg-8">
               <div
@@ -122,7 +134,7 @@
               <div class="card border-0 shadow-sm mb-4">
                 <div class="card-body">
                   <h3 class="h5 fw-bold mb-3">Localização</h3>
-                  <p class="mb-3">{{ evento.fullAddress }}</p>
+                  <p class="mb-3">{{ evento.local }}</p>
                   <div class="ratio ratio-16x9 rounded overflow-hidden">
                     <iframe
                       src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3673.8018529442225!2d-43.18058692549636!3d-22.951345479112845!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x997fd5984aa13f%3A0x9dc984d7019502de!2sCopacabana%20Beach!5e0!3m2!1sen!2sbr!4v1682599231978!5m2!1sen!2sbr"
@@ -171,10 +183,11 @@
             <SideBarEvent :event-id="evento.id" />
           </div>
         </div>
-      </section>
+        </section>
 
-      <!-- Related Events -->
-      <RelatedEvents :relatedEvents="relatedEvents" />
+        <!-- Related Events -->
+        <RelatedEvents :relatedEvents="relatedEvents" />
+      </section>
     </main>
 
     <!-- Footer -->
@@ -187,6 +200,7 @@ import RelatedEvents from "@/components/Publico/Evento Details/RelatedEventsComp
 import NavBarComponents from "@/components/Publico/common/NavBarComponents.vue";
 import EventFooter from "@/components/Publico/Evento Details/FooterEventComponents.vue";
 import SideBarEvent from "@/components/Publico/Evento Details/SideBarEventComponents.vue";
+import { getEventoDetalhadoById, getEventos } from "@/services/api";
 
 export default {
   name: "EventoDetalhes",
@@ -201,58 +215,62 @@ export default {
       evento: null,
       loading: true,
       error: null,
-      relatedEvents: [
-        {
-          id: 2,
-          title: "Show de Rock Nacional",
-          date: "22 Nov 2023",
-          location: "Arena Multiuso, São Paulo",
-          price: 90.0,
-          category: "Show",
-          image: "https://placehold.co/600x400",
-        },
-        {
-          id: 3,
-          title: "Festival de Jazz",
-          date: "10-12 Jan 2024",
-          location: "Parque da Cidade, Brasília",
-          price: 120.0,
-          category: "Festival",
-          image: "https://placehold.co/600x400",
-        },
-        {
-          id: 4,
-          title: "Sunset Party",
-          date: "30 Dez 2023",
-          location: "Praia de Ipanema, Rio de Janeiro",
-          price: 80.0,
-          category: "Festa",
-          image: "https://placehold.co/600x400",
-        },
-      ],
+      relatedEvents: [],
     };
   },
   async created() {
-    try {
-      const response = await fetch(
-        `http://localhost:3000/eventos/${this.$route.params.id}`
-      );
-      if (!response.ok) throw new Error("Evento não encontrado");
-
-      this.evento = await response.json();
-
-      this.evento.fullDate = this.formatDateRange(
-        this.evento.datainicio,
-        this.evento.datafim
-      );
-    } catch (err) {
-      this.error = err.message;
-      console.error("Erro ao carregar evento:", err);
-    } finally {
-      this.loading = false;
-    }
+    await this.loadEvento(this.$route.params.id);
+  },
+  watch: {
+    "$route.params.id"(newId) {
+      // Quando navegar para outro evento na mesma view (ex: relacionado)
+      this.loadEvento(newId);
+    },
   },
   methods: {
+    async loadEvento(id) {
+      this.loading = true;
+      this.error = null;
+      this.evento = null;
+      try {
+        // Carrega evento principal via serviço de API
+        const evento = await getEventoDetalhadoById(id);
+        this.evento = {
+          ...evento,
+          imagemevento:
+            evento.imagemevento ||
+            "https://placehold.co/1200x600?text=Evento+sem+imagem",
+        };
+
+        // Carrega eventos relacionados (mesma categoria, diferente ID)
+        const todosEventos = await getEventos();
+        this.relatedEvents = todosEventos
+          .filter(
+            (e) =>
+              e.id !== this.evento.id &&
+              e.categoria &&
+              e.categoria === this.evento.categoria
+          )
+          .slice(0, 3)
+          .map((e) => ({
+            id: e.id,
+            title: e.nomeevento,
+            date: this.formatDate(e.datainicio),
+            location: e.local,
+            // Se tiver ingressos agregados em outro fluxo, poderíamos usar precoMinimo; aqui mantemos 0
+            price: 0,
+            category: e.categoria,
+            image:
+              e.imagemevento ||
+              "https://placehold.co/600x400?text=Evento+sem+imagem",
+          }));
+      } catch (err) {
+        this.error = err.message || "Erro ao carregar evento.";
+        console.error("Erro ao carregar evento:", err);
+      } finally {
+        this.loading = false;
+      }
+    },
     formatDate(dateString) {
       const options = { day: "2-digit", month: "long", year: "numeric" };
       return new Date(dateString).toLocaleDateString("pt-BR", options);
