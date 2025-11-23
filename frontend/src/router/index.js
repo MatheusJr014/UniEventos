@@ -6,7 +6,12 @@ import UsuarioView from "@/views/User/UsuarioView.vue";
 import EventosListView from "@/views/Publico/EventosListView.vue";
 import GuardAdmin from '../middleware/Auths'; 
 import LoginAndCadastroView from "@/views/Publico/LoginAndCadastroView.vue";
+import ContatoView from "@/views/Publico/ContatoView.vue";
+import SobreView from "@/views/Publico/SobreView.vue";
+import ParaOrganizadoresView from "@/views/Publico/ParaOrganizadoresView.vue";
+import CategoriasView from "@/views/Publico/CategoriasView.vue";
 import MaintenancePage from "@/components/Publico/common/404ErrorDev.vue";
+import Teste from "@/components/teste.vue";
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -24,6 +29,11 @@ const router = createRouter({
       path: '/manutencao',
       name: 'manutencao',
       component: MaintenancePage
+    },
+    {
+      path: '/teste',
+      name: 'teste',
+      component: Teste
     },
     {
       path: '/404',
@@ -57,6 +67,26 @@ const router = createRouter({
       path: '/politica-cancelamento',
       name: 'politica-cancelamento',
       component: MaintenancePage
+    },
+    {
+      path: '/contato',
+      name: 'contato',
+      component: ContatoView
+    },
+    {
+      path: '/sobre',
+      name: 'sobre',
+      component: SobreView
+    },
+    {
+      path: '/organizadores',
+      name: 'organizadores',
+      component: ParaOrganizadoresView
+    },
+    {
+      path: '/categorias',
+      name: 'categorias',
+      component: CategoriasView
     },
     {
       path: '/eventos',

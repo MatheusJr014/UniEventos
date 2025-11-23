@@ -33,10 +33,10 @@
                         <h5 class="fw-bold mb-3 small text-uppercase">Organizadores</h5>
                         <ul class="nav flex-column">
                             <li class="nav-item mb-2">
-                                <a href="#" class="nav-link p-0 text-muted small">Criar Evento</a>
+                                <router-link to="/organizadores" class="nav-link p-0 text-muted small">Criar Evento</router-link>
                             </li>
                             <li class="nav-item mb-2">
-                                <a href="#" class="nav-link p-0 text-muted small">Vender Ingressos</a>
+                                <router-link to="/organizadores" class="nav-link p-0 text-muted small">Vender Ingressos</router-link>
                             </li>
                             <li class="nav-item mb-2">
                                 <a href="#" class="nav-link p-0 text-muted small">Ferramentas</a>
@@ -50,7 +50,7 @@
                         <h5 class="fw-bold mb-3 small text-uppercase">Empresa</h5>
                         <ul class="nav flex-column">
                             <li class="nav-item mb-2">
-                                <a href="#" class="nav-link p-0 text-muted small">Sobre Nós</a>
+                                <router-link to="/sobre" class="nav-link p-0 text-muted small">Sobre Nós</router-link>
                             </li>
                             <li class="nav-item mb-2">
                                 <a href="#" class="nav-link p-0 text-muted small">Carreiras</a>
@@ -59,7 +59,7 @@
                                 <a href="#" class="nav-link p-0 text-muted small">Blog</a>
                             </li>
                             <li class="nav-item mb-2">
-                                <a href="#" class="nav-link p-0 text-muted small">Contato</a>
+                                <router-link to="/contato" class="nav-link p-0 text-muted small">Contato</router-link>
                             </li>
                         </ul>
                     </div>
