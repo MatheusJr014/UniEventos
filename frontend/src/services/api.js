@@ -79,6 +79,11 @@ export const criarEvento = async (eventData) => {
   return data;
 };
 
+export const atualizarEvento = async (id, eventData) => {
+  const { data } = await api.put(`/eventos/${id}`, eventData);
+  return data;
+};
+
 export const deletarEvento = async (id) => {
   const { data } = await api.delete(`/eventos/${id}`);
   return data;

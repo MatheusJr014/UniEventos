@@ -625,11 +625,11 @@
       </div>
   
       <!-- Add Event Modal -->
-      <div class="modal fade" id="addEventModal" tabindex="-1" aria-labelledby="addEventModalLabel" aria-hidden="true" v-if="showAddEventModal">
+      <div class="modal fade" id="addEventModal" tabindex="-1" aria-labelledby="addEventModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-lg">
           <div class="modal-content">
             <div class="modal-header">
-              <h5 class="modal-title" id="addEventModalLabel">Adicionar Novo Evento</h5>
+              <h5 class="modal-title" id="addEventModalLabel">{{ isEditing ? 'Editar Evento' : 'Adicionar Novo Evento' }}</h5>
                 <button type="button" class="btn-close" @click="closeAddEventModal"></button>
             </div>
             <div class="modal-body">
@@ -707,37 +707,37 @@
                   </div>
                   
                   <div class="col-md-12">
-                    <label for="local" class="form-label">Imagem</label>
+                    <label for="imagem" class="form-label">Imagem</label>
                     <input type="text" class="form-control" id="imagem"
-                      v-model="newEvent.imagemevento" required
-                      placeholder="Imagem do Evento">
+                      v-model="newEvent.imagemevento"
+                      placeholder="URL da Imagem do Evento">
                   </div>
                 </div>
               </form>
             </div>
             <div class="modal-footer">
               <button type="button" class="btn btn-secondary" @click="closeAddEventModal">Cancelar</button>
-              <button type="button" class="btn btn-primary" @click="addEvent">Salvar Evento</button>
+              <button type="button" class="btn btn-primary" @click="addEvent">{{ isEditing ? 'Atualizar Evento' : 'Salvar Evento' }}</button>
             </div>
           </div>
         </div>
       </div>
   
       <!-- Delete Event Confirmation Modal -->
-      <div class="modal fade" id="deleteEventModal" tabindex="-1" aria-labelledby="deleteEventModalLabel" aria-hidden="true" v-if="showDeleteEventModal">
+      <div class="modal fade" id="deleteEventModal" tabindex="-1" aria-labelledby="deleteEventModalLabel" aria-hidden="true">
 
         <div class="modal-dialog">
           <div class="modal-content">
             <div class="modal-header">
               <h5 class="modal-title" id="deleteEventModalLabel">Confirmar Exclusão</h5>
-              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+              <button type="button" class="btn-close" @click="closeDeleteModal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
               <p>Tem certeza que deseja excluir o evento <strong>{{ eventToDelete?.nomeevento }}</strong>?</p>
               <p class="text-danger">Esta ação não pode ser desfeita.</p>
             </div>
             <div class="modal-footer">
-              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+              <button type="button" class="btn btn-secondary" @click="closeDeleteModal">Cancelar</button>
               <button type="button" class="btn btn-danger" @click="deleteEvent">Excluir</button>
             </div>
           </div>
@@ -747,7 +747,7 @@
   </template>
   
 <script>
-  import { criarEvento, deletarEvento, getEventosPorOrganizador, getIngressos, getUsuarioById } from '@/services/api';
+  import { criarEvento, atualizarEvento, deletarEvento, getEventosPorOrganizador, getIngressos, getUsuarioById } from '@/services/api';
   import { jwtDecode } from 'jwt-decode';
 
   export default {
@@ -757,6 +757,8 @@
         sidebarCollapsed: false,
         activeMenuItem: 'dashboard',
         showAddEventModal: false,
+        isEditing: false,
+        editingEventId: null,
         newEvent: {
           nomeevento: '',
           descricao: '',
@@ -938,18 +940,22 @@
             OrganizadorId: this.organizadorId 
           };
 
-          const response = await criarEvento(eventData);
+          if (this.isEditing && this.editingEventId) {
+            // Atualizar evento existente
+            await atualizarEvento(this.editingEventId, eventData);
+            alert('Evento atualizado com sucesso!');
+          } else {
+            // Criar novo evento
+            await criarEvento(eventData);
+            alert('Evento adicionado com sucesso!');
+          }
           
           await this.fetchEvents();
-          
           this.closeAddEventModal();
-          this.resetNewEventForm();
-          
-          alert('Evento adicionado com sucesso!');
           
         } catch (error) {
-          console.error('Erro ao adicionar evento:', error);
-          let errorMessage = 'Erro ao adicionar evento';
+          console.error('Erro ao salvar evento:', error);
+          let errorMessage = this.isEditing ? 'Erro ao atualizar evento' : 'Erro ao adicionar evento';
           
           if (error.response) {
             if (error.response.data && error.response.data.message) {
@@ -1006,23 +1012,120 @@
     this.filterCategory = '';
     this.filterStatus = '';
   },
+  openAddEventModal() {
+    this.resetNewEventForm();
+    this.$nextTick(() => {
+      const modalElement = document.getElementById('addEventModal');
+      if (modalElement) {
+        // Bootstrap 5 está disponível globalmente via CDN
+        const bootstrap = window.bootstrap;
+        if (bootstrap && bootstrap.Modal) {
+          // Verificar se já existe uma instância do modal
+          let modal = bootstrap.Modal.getInstance(modalElement);
+          if (!modal) {
+            modal = new bootstrap.Modal(modalElement);
+          }
+          modal.show();
+        } else {
+          console.error('Bootstrap não está disponível');
+        }
+      }
+    });
+  },
+  closeAddEventModal() {
+    const modalElement = document.getElementById('addEventModal');
+    if (modalElement) {
+      const bootstrap = window.bootstrap;
+      if (bootstrap && bootstrap.Modal) {
+        const modal = bootstrap.Modal.getInstance(modalElement);
+        if (modal) {
+          modal.hide();
+        }
+      }
+    }
+    this.isEditing = false;
+    this.editingEventId = null;
+    this.resetNewEventForm();
+  },
+  resetNewEventForm() {
+    this.newEvent = {
+      nomeevento: '',
+      descricao: '',
+      datainicio: '',
+      datafim: '',
+      horainicio: '00:00:00',
+      horafim: '00:00:00',
+      local: '',
+      imagemevento: '',
+      categoria: '',
+      quantidadeingresso: 0,
+      status: 'ativo',
+      organizadorId: null
+    };
+  },
   editEvent(event) {
-    console.log('Editar evento:', event);
+    // Preencher o formulário com os dados do evento
+    this.isEditing = true;
+    this.editingEventId = event.id;
+    this.newEvent = {
+      nomeevento: event.nomeevento || '',
+      descricao: event.descricao || '',
+      datainicio: event.datainicio || '',
+      datafim: event.datafim || '',
+      horainicio: event.horainicio || '00:00:00',
+      horafim: event.horafim || '00:00:00',
+      local: event.local || '',
+      imagemevento: event.imagemevento || '',
+      categoria: event.categoria || '',
+      quantidadeingresso: event.quantidadeingresso || 0,
+      status: event.status || 'ativo',
+      organizadorId: event.OrganizadorId || this.organizadorId
+    };
+    this.openAddEventModal();
   },
   viewEvent(event) {
-    console.log('Visualizar evento:', event);
+    // Navegar para a página de detalhes do evento
+    this.$router.push({ name: 'evento-detalhes', params: { id: event.id } });
+  },
+  openDeleteModal(event) {
+    this.eventToDelete = event;
+    this.showDeleteEventModal = true;
+    this.$nextTick(() => {
+      const modalElement = document.getElementById('deleteEventModal');
+      if (modalElement) {
+        const bootstrap = window.bootstrap;
+        if (bootstrap && bootstrap.Modal) {
+          let modal = bootstrap.Modal.getInstance(modalElement);
+          if (!modal) {
+            modal = new bootstrap.Modal(modalElement);
+          }
+          modal.show();
+        }
+      }
+    });
+  },
+  closeDeleteModal() {
+    const modalElement = document.getElementById('deleteEventModal');
+    if (modalElement) {
+      const bootstrap = window.bootstrap;
+      if (bootstrap && bootstrap.Modal) {
+        const modal = bootstrap.Modal.getInstance(modalElement);
+        if (modal) {
+          modal.hide();
+        }
+      }
+    }
+    this.showDeleteEventModal = false;
+    this.eventToDelete = null;
   },
   async deleteEvent() {
     try {
       if (!this.eventToDelete) return;
 
-      const response = await deletarEvento(this.eventToDelete.id);
-
-      if (response.status === 200) {
-        await this.fetchEvents();
-        this.closeDeleteModal();
-        alert('Evento excluído com sucesso!');
-      }
+      await deletarEvento(this.eventToDelete.id);
+      await this.fetchEvents();
+      this.closeDeleteModal();
+      alert('Evento excluído com sucesso!');
     } catch (error) {
       console.error('Erro ao excluir evento:', error);
       alert('Erro ao excluir evento: ' + (error.response?.data?.message || error.message));
