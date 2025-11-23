@@ -32,7 +32,15 @@
                 <router-link to="/auth/login" class="btn me-2 d-none d-sm-inline">Entrar</router-link>
                 <router-link to="/auth/login" class="btn btn-primary">Cadastrar</router-link>
               </div>
-              <div class="d-flex align-items-center" v-else>
+              <div class="d-flex align-items-center gap-2" v-else>
+                <router-link 
+                  v-if="isOrganizador" 
+                  to="/admin" 
+                  class="btn btn-outline-primary d-none d-sm-inline-flex align-items-center"
+                >
+                  <i class="bi bi-gear me-2"></i>
+                  Área do Organizador
+                </router-link>
                 <div class="dropdown">
                   <a href="#" class="d-flex align-items-center text-decoration-none dropdown-toggle" id="userDropdown"
                     data-bs-toggle="dropdown" aria-expanded="false">
@@ -41,11 +49,22 @@
                     <span class="d-none d-sm-inline">{{ userData.nome }}</span>
                   </a>
                   <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
-                    <li><router-link to="/usuario/perfil" class="dropdown-item active"><i class="bi bi-person me-2"></i>Meu Perfil</router-link></li>
-                    <li><router-link to="/usuario/ingressos" class="dropdown-item"><i class="bi bi-ticket-perforated me-2"></i>Meus Ingressos</router-link>
+                    <li v-if="!isOrganizador">
+                      <router-link to="/usuario/perfil" class="dropdown-item active">
+                        <i class="bi bi-person me-2"></i>Meu Perfil
+                      </router-link>
                     </li>
-                    <li><router-link to="/usuario/historico" class="dropdown-item"><i class="bi bi-heart me-2"></i>Favoritos</router-link></li>
-                    <li>
+                    <li v-if="!isOrganizador">
+                      <router-link to="/usuario/ingressos" class="dropdown-item">
+                        <i class="bi bi-ticket-perforated me-2"></i>Meus Ingressos
+                      </router-link>
+                    </li>
+                    <li v-if="!isOrganizador">
+                      <router-link to="/usuario/historico" class="dropdown-item">
+                        <i class="bi bi-heart me-2"></i>Favoritos
+                      </router-link>
+                    </li>
+                    <li v-if="!isOrganizador">
                       <hr class="dropdown-divider">
                     </li>
                     <li><a class="dropdown-item" href="#" @click="logout"><i class="bi bi-box-arrow-right me-2"></i>Sair</a></li>
@@ -67,6 +86,7 @@ export default {
   data() {
     return {
       isLoggedIn: false,
+      isOrganizador: false,
       userData: {},
       userProfileImage: "https://placehold.co/100/f8f9fa/6c757d?text=JS", // Imagem padrão
     };
@@ -82,21 +102,28 @@ export default {
         try {
           const decodedToken = jwtDecode(token);
           this.userData = {
-            id: decodedToken.Id,
+            id: decodedToken.id || decodedToken.Id,
             nome: decodedToken.nome || "Usuario"
           };
           this.isLoggedIn = true;
+          // Verifica se o usuário é organizador (tipo === true)
+          this.isOrganizador = decodedToken.tipo === true;
         } catch (error) {
           console.error("Erro ao decodificar o Token: ", error);
           this.isLoggedIn = false;
+          this.isOrganizador = false;
         }
+      } else {
+        this.isLoggedIn = false;
+        this.isOrganizador = false;
       }
     },
     logout() {
       localStorage.removeItem("token");
       this.isLoggedIn = false;
-      this.userData = {},
-        this.$router.push("/auth/login")
+      this.isOrganizador = false;
+      this.userData = {};
+      this.$router.push("/auth/login");
     }
   }
 }
