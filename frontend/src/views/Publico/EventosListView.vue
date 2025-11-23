@@ -917,11 +917,24 @@ export default {
 
       if (this.selectedCategories.length > 0) {
         result = result.filter((event) =>
-          this.selectedCategories.some(
-            (cat) =>
+          this.selectedCategories.some((catId) => {
+            const category = this.categories.find((c) => c.id === catId);
+            if (!category) return false;
+            return (
               event.categoria &&
-              event.categoria.toLowerCase() === cat.toLowerCase()
-          )
+              event.categoria.toLowerCase() === category.name.toLowerCase()
+            );
+          })
+        );
+      }
+
+      // Filtro adicional por query param categoria (se não estiver em selectedCategories)
+      if (this.$route.query.categoria) {
+        const categoriaQuery = this.$route.query.categoria.toLowerCase();
+        result = result.filter(
+          (event) =>
+            event.categoria &&
+            event.categoria.toLowerCase() === categoriaQuery
         );
       }
 
@@ -1118,6 +1131,12 @@ export default {
   created() {
     this.fetchEvents();
   },
+  watch: {
+    '$route.query.categoria'() {
+      // Força atualização quando a categoria na query mudar
+      this.currentPage = 1;
+    }
+  }
 };
 </script>
 
