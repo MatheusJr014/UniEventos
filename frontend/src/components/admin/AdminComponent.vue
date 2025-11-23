@@ -31,19 +31,15 @@
         <div class="sidebar-footer">
           <div class="user-info" v-if="!sidebarCollapsed">
             <div class="user-avatar">
-              <img src="https://placehold.co/100x100" alt="Admin User" class="img-fluid rounded-circle">
+              <img :src="userImage" alt="Organizador" class="img-fluid rounded-circle">
             </div>
             <div class="user-details">
-              <div class="user-name">Admin User</div>
-              <div class="user-role text-muted">Administrador</div>
+              <div class="user-name">{{ userName }}</div>
+              <div class="user-role text-muted">Organizador</div>
             </div>
           </div>
           <div class="user-actions">
-            <a href="#" class="btn btn-sm btn-link text-primary" title="Configurações">
-              <i class="bi bi-gear"></i>
-              <span v-if="!sidebarCollapsed">Configurações</span>
-            </a>
-            <a href="#" class="btn btn-sm btn-link text-primary" title="Sair">
+            <a href="#" class="btn btn-sm btn-link text-primary" title="Sair" @click.prevent="logout">
               <i class="bi bi-box-arrow-right"></i>
               <span v-if="!sidebarCollapsed">Sair</span>
             </a>
@@ -81,9 +77,8 @@
               </button>
               <ul class="dropdown-menu dropdown-menu-end">
                 <li><a class="dropdown-item" href="#">Meu Perfil</a></li>
-                <li><a class="dropdown-item" href="#">Configurações</a></li>
                 <li><hr class="dropdown-divider"></li>
-                <li><a class="dropdown-item" href="#">Sair</a></li>
+                <li><a class="dropdown-item" href="#" @click.prevent="logout">Sair</a></li>
               </ul>
             </div>
           </div>
@@ -752,7 +747,7 @@
   </template>
   
 <script>
-  import { criarEvento, deletarEvento, getEventosPorOrganizador, getIngressos } from '@/services/api';
+  import { criarEvento, deletarEvento, getEventosPorOrganizador, getIngressos, getUsuarioById } from '@/services/api';
   import { jwtDecode } from 'jwt-decode';
 
   export default {
@@ -789,7 +784,9 @@
           { id: 'settings', name: 'Configurações', icon: 'bi-gear' }
         ],
         events: [],
-        organizadorId: null
+        organizadorId: null,
+        userName: 'Organizador',
+        userImage: null // Será definido no fetchUserData
       };
     },
     computed: {
@@ -812,6 +809,7 @@
     },
     created() {
       this.getOrganizadorId();
+      this.fetchUserData();
       this.fetchEvents();
     },
     methods: {
@@ -836,6 +834,48 @@
           localStorage.removeItem('token');
           this.$router.push('/auth/login');
         }
+      },
+      async fetchUserData() {
+        const token = localStorage.getItem('token');
+        if (!token) {
+          console.error('Token não encontrado!');
+          return;
+        }
+        
+        try {
+          const decodedToken = jwtDecode(token);
+          this.userName = decodedToken.nome || 'Organizador';
+          
+          // Buscar dados completos do usuário para pegar a imagem
+          const userId = decodedToken.id;
+          if (userId) {
+            try {
+              const userData = await getUsuarioById(userId, token);
+              // Se o usuário tiver imagem, usar ela, senão usar a logo
+              if (userData.imagemusuario) {
+                this.userImage = userData.imagemusuario;
+              } else {
+                // Usar a logo padrão do Conecta
+                this.userImage = '../../assets/logo.svg';
+              }
+            } catch (error) {
+              console.error('Erro ao buscar dados do usuário:', error);
+              // Em caso de erro, usar a logo padrão
+              this.userImage = '../../assets/logo.svg';
+            }
+          } else {
+            // Se não tiver userId, usar logo padrão
+            this.userImage = '../../assets/logo.svg';
+          }
+        } catch (error) {
+          console.error('Erro ao decodificar token:', error);
+          // Em caso de erro, usar logo padrão
+          this.userImage = '../../assets/logo.svg';
+        }
+      },
+      logout() {
+        localStorage.removeItem("token");
+        this.$router.push("/auth/login");
       },
 
       async fetchEvents() {
