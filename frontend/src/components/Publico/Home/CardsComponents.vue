@@ -28,13 +28,18 @@
                 </div>
                 <div class="d-flex align-items-center text-muted mb-3">
                   <i class="bi bi-geo-alt me-2"></i>
-                  <span>{{ event.datafim }}</span>
+                  <span>{{ event.local }}</span>
                 </div>
                 <div class="d-flex justify-content-between align-items-center">
-                  <div class="fw-bold">{{`R$0,0`}}</div>
-                  <!-- <div class="fw-bold">{{ event.price === 0 ? 'Grátis' : `R$
-                    ${event.price.toFixed(2)}` }}</div> -->
-                  <a href="#" class="btn btn-sm btn-secondary">Comprar</a>
+                  <div class="fw-bold">
+                    {{ event.precoMinimo > 0 ? `R$ ${event.precoMinimo.toFixed(2).replace('.', ',')}` : 'Grátis' }}
+                  </div>
+                  <router-link 
+                    :to="{ name: 'evento-detalhes', params: { id: event.id } }" 
+                    class="btn btn-sm btn-secondary"
+                  >
+                    Comprar
+                  </router-link>
                 </div>
               </div>
             </div>
