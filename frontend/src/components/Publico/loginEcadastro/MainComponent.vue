@@ -14,10 +14,10 @@
                                             <div class="h-100 bg-primary position-relative" style="min-height: 500px;">
                                                 <div
                                                     class="position-absolute top-0 start-0 w-100 h-100 overflow-hidden">
-                                                    <img src="https://placehold.co/600x800" alt="Eventos"
+                                                    <img src="../../../assets/padrao_img.svg" alt="Eventos"
                                                         class="img-cover">
                                                     <div
-                                                        class="position-absolute top-0 start-0 w-100 h-100 bg-primary opacity-75">
+                                                        class="position-absolute top-0 start-0 w-100 h-100 opacity-75">
                                                     </div>
                                                 </div>
                                                 <div

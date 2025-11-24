@@ -143,6 +143,9 @@ export default {
   data() {
     return {
       activeTab: 'register',
+      showRegisterPassword: false,
+      showRegisterConfirmPassword: false,
+      registerLoading: false,
       registerForm: {
         nome: '',
         sobrenome: '',
