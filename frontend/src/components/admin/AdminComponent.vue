@@ -410,6 +410,74 @@
             </div>
           </div>
   
+          <!-- Ingressos Management -->
+          <div v-if="activeMenuItem === 'ingressos'">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+              <h4 class="mb-0">Gerenciamento de Ingressos</h4>
+              <button class="btn btn-primary" @click="openAddIngressoModal">
+                <i class="bi bi-plus-circle me-2"></i>Adicionar Ingresso
+              </button>
+            </div>
+  
+            <div class="card border-0 shadow-sm mb-4">
+              <div class="card-body">
+                <div class="table-responsive">
+                  <table class="table table-hover align-middle">
+                    <thead class="table-light">
+                      <tr>
+                        <th scope="col">ID</th>
+                        <th scope="col">Evento</th>
+                        <th scope="col">Tipo</th>
+                        <th scope="col">Preço</th>
+                        <th scope="col">Total</th>
+                        <th scope="col">Disponível</th>
+                        <th scope="col">Ações</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr v-for="ingresso in ingressos" :key="ingresso.id">
+                        <td>{{ ingresso.id }}</td>
+                        <td>
+                          {{ getEventoNome(ingresso.EventoId) }}
+                        </td>
+                        <td>
+                          <span class="badge bg-primary">{{ ingresso.tipoingresso || 'N/A' }}</span>
+                        </td>
+                        <td>
+                          {{ parseFloat(ingresso.preco || 0) === 0 ? 'Grátis' : `R$ ${parseFloat(ingresso.preco).toFixed(2).replace('.', ',')}` }}
+                        </td>
+                        <td>{{ ingresso.quantidadeTotal || 0 }}</td>
+                        <td>
+                          <span :class="ingresso.quantidadeDisponivel > 0 ? 'text-success' : 'text-danger'">
+                            {{ ingresso.quantidadeDisponivel || 0 }}
+                          </span>
+                        </td>
+                        <td>
+                          <div class="btn-group">
+                            <button class="btn btn-sm btn-outline-secondary" @click="editIngresso(ingresso)">
+                              <i class="bi bi-pencil"></i>
+                            </button>
+                            <button class="btn btn-sm btn-outline-danger" @click="openDeleteIngressoModal(ingresso)">
+                              <i class="bi bi-trash"></i>
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                      <tr v-if="ingressos.length === 0">
+                        <td colspan="7" class="text-center py-4">
+                          <div class="text-muted">
+                            <i class="bi bi-ticket-perforated fs-4 d-block mb-2"></i>
+                            Nenhum ingresso cadastrado.
+                          </div>
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
+  
           <!-- Reports -->
           <div v-if="activeMenuItem === 'reports'">
             <h4 class="mb-4">Relatórios</h4>
@@ -723,6 +791,94 @@
         </div>
       </div>
   
+      <!-- Add/Edit Ingresso Modal -->
+      <div class="modal fade" id="ingressoModal" tabindex="-1" aria-labelledby="ingressoModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title" id="ingressoModalLabel">{{ isEditingIngresso ? 'Editar Ingresso' : 'Adicionar Novo Ingresso' }}</h5>
+              <button type="button" class="btn-close" @click="closeIngressoModal"></button>
+            </div>
+            <div class="modal-body">
+              <form @submit.prevent="saveIngresso">
+                <div class="row g-3">
+                  <div class="col-md-12">
+                    <label for="ingressoEvento" class="form-label">Evento*</label>
+                    <select class="form-select" id="ingressoEvento" v-model="newIngresso.eventoId" @change="onEventoSelected" required>
+                      <option value="">Selecione um evento</option>
+                      <option v-for="evento in events" :key="evento.id" :value="evento.id">
+                        {{ evento.nomeevento }} {{ evento.quantidadeingresso ? `(${evento.quantidadeingresso} ingressos)` : '' }}
+                      </option>
+                    </select>
+                  </div>
+                  
+                  <div class="col-md-6">
+                    <label for="tipoIngresso" class="form-label">Tipo de Ingresso</label>
+                    <input type="text" class="form-control" id="tipoIngresso" 
+                      v-model="newIngresso.tipoingresso"
+                      placeholder="Ex: VIP, Pista, Camarote">
+                  </div>
+                  
+                  <div class="col-md-6">
+                    <label for="precoIngresso" class="form-label">Preço (R$)*</label>
+                    <input type="number" class="form-control" id="precoIngresso"
+                      v-model.number="newIngresso.preco" step="0.01" min="0"
+                      placeholder="0.00 para gratuito" required>
+                    <div class="form-text">Digite 0 para ingressos gratuitos</div>
+                  </div>
+                  
+                  <div class="col-md-6">
+                    <label for="quantidadeTotal" class="form-label">Quantidade Total*</label>
+                    <input type="number" class="form-control" id="quantidadeTotal"
+                      v-model.number="newIngresso.quantidadeTotal" min="1"
+                      :max="getEventoQuantidadeIngressos(newIngresso.eventoId)"
+                      placeholder="0" required>
+                    <div class="form-text" v-if="newIngresso.eventoId">
+                      Máximo baseado no evento: {{ getEventoQuantidadeIngressos(newIngresso.eventoId) || 'N/A' }}
+                    </div>
+                  </div>
+                  
+                  <div class="col-md-6">
+                    <label for="quantidadeDisponivel" class="form-label">Quantidade Disponível*</label>
+                    <input type="number" class="form-control" id="quantidadeDisponivel"
+                      v-model.number="newIngresso.quantidadeDisponivel" min="0"
+                      :max="newIngresso.quantidadeTotal || getEventoQuantidadeIngressos(newIngresso.eventoId)"
+                      placeholder="0" required>
+                    <div class="form-text">
+                      Máximo: {{ newIngresso.quantidadeTotal || getEventoQuantidadeIngressos(newIngresso.eventoId) || 0 }}
+                    </div>
+                  </div>
+                </div>
+              </form>
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" @click="closeIngressoModal">Cancelar</button>
+              <button type="button" class="btn btn-primary" @click="saveIngresso">{{ isEditingIngresso ? 'Atualizar Ingresso' : 'Salvar Ingresso' }}</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Delete Ingresso Confirmation Modal -->
+      <div class="modal fade" id="deleteIngressoModal" tabindex="-1" aria-labelledby="deleteIngressoModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title" id="deleteIngressoModalLabel">Confirmar Exclusão</h5>
+              <button type="button" class="btn-close" @click="closeDeleteIngressoModal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+              <p>Tem certeza que deseja excluir este ingresso?</p>
+              <p class="text-danger">Esta ação não pode ser desfeita.</p>
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" @click="closeDeleteIngressoModal">Cancelar</button>
+              <button type="button" class="btn btn-danger" @click="deleteIngresso">Excluir</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <!-- Delete Event Confirmation Modal -->
       <div class="modal fade" id="deleteEventModal" tabindex="-1" aria-labelledby="deleteEventModalLabel" aria-hidden="true">
 
@@ -747,8 +903,9 @@
   </template>
   
 <script>
-  import { criarEvento, atualizarEvento, deletarEvento, getEventosPorOrganizador, getIngressos, getUsuarioById } from '@/services/api';
+  import { criarEvento, atualizarEvento, deletarEvento, getEventosPorOrganizador, getIngressos, getUsuarioById, criarIngresso, atualizarIngresso, deletarIngresso } from '@/services/api';
   import { jwtDecode } from 'jwt-decode';
+  import Swal from 'sweetalert2';
 
   export default {
     name: 'AdminPainel',
@@ -782,13 +939,28 @@
         menuItems: [
           { id: 'dashboard', name: 'Dashboard', icon: 'bi-speedometer2' },
           { id: 'events', name: 'Eventos', icon: 'bi-calendar-event' },
+          { id: 'ingressos', name: 'Ingressos', icon: 'bi-ticket-perforated' },
           { id: 'reports', name: 'Relatórios', icon: 'bi-bar-chart' },
           { id: 'settings', name: 'Configurações', icon: 'bi-gear' }
         ],
         events: [],
         organizadorId: null,
         userName: 'Organizador',
-        userImage: null // Será definido no fetchUserData
+        userImage: null, // Será definido no fetchUserData
+        // Ingressos
+        ingressos: [],
+        showIngressoModal: false,
+        isEditingIngresso: false,
+        editingIngressId: null,
+        newIngresso: {
+          eventoId: '',
+          tipoingresso: '',
+          preco: '',
+          quantidadeTotal: '',
+          quantidadeDisponivel: ''
+        },
+        ingressoToDelete: null,
+        showDeleteIngressoModal: false
       };
     },
     computed: {
@@ -907,6 +1079,9 @@
           });
 
           this.error = null;
+          
+          // Buscar ingressos após carregar eventos
+          await this.fetchIngressos();
         } catch (err) {
           console.error("Erro na API:", err);
           this.error = "Não foi possível carregar os dados";
@@ -920,8 +1095,14 @@
           if (!this.validateEventForm()) return;
           
           if (!this.organizadorId) {
-            alert('Erro de autenticação. Faça login novamente.');
-            this.$router.push('/auth/login');
+            Swal.fire({
+              icon: 'error',
+              title: 'Erro de autenticação',
+              text: 'Faça login novamente.',
+              confirmButtonColor: '#dc3545'
+            }).then(() => {
+              this.$router.push('/auth/login');
+            });
             return;
           }
           
@@ -943,11 +1124,23 @@
           if (this.isEditing && this.editingEventId) {
             // Atualizar evento existente
             await atualizarEvento(this.editingEventId, eventData);
-            alert('Evento atualizado com sucesso!');
+            await Swal.fire({
+              icon: 'success',
+              title: 'Sucesso!',
+              text: 'Evento atualizado com sucesso!',
+              timer: 2000,
+              showConfirmButton: false
+            });
           } else {
             // Criar novo evento
             await criarEvento(eventData);
-            alert('Evento adicionado com sucesso!');
+            await Swal.fire({
+              icon: 'success',
+              title: 'Sucesso!',
+              text: 'Evento adicionado com sucesso!',
+              timer: 2000,
+              showConfirmButton: false
+            });
           }
           
           await this.fetchEvents();
@@ -962,13 +1155,21 @@
               errorMessage = error.response.data.message;
             } else if (error.response.status === 401) {
               errorMessage = 'Você não está autenticado';
-              this.$router.push('/auth/login');
             } else if (error.response.status === 403) {
               errorMessage = 'Você não tem permissão para esta ação';
             }
           }
           
-          alert(errorMessage);
+          Swal.fire({
+            icon: 'error',
+            title: 'Erro',
+            text: errorMessage,
+            confirmButtonColor: '#dc3545'
+          }).then(() => {
+            if (error.response?.status === 401) {
+              this.$router.push('/auth/login');
+            }
+          });
         }
       },
 
@@ -986,7 +1187,12 @@
   }
 
   if (errors.length > 0) {
-    alert(errors.join('\n'));
+    Swal.fire({
+      icon: 'warning',
+      title: 'Campos inválidos',
+      html: errors.map(err => `• ${err}`).join('<br>'),
+      confirmButtonColor: '#7749F8'
+    });
     return false;
   }
 
@@ -1125,10 +1331,24 @@
       await deletarEvento(this.eventToDelete.id);
       await this.fetchEvents();
       this.closeDeleteModal();
-      alert('Evento excluído com sucesso!');
+      
+      await Swal.fire({
+        icon: 'success',
+        title: 'Sucesso!',
+        text: 'Evento excluído com sucesso!',
+        timer: 2000,
+        showConfirmButton: false
+      });
     } catch (error) {
       console.error('Erro ao excluir evento:', error);
-      alert('Erro ao excluir evento: ' + (error.response?.data?.message || error.message));
+      const errorMessage = error.response?.data?.message || error.message || 'Erro ao excluir evento';
+      
+      Swal.fire({
+        icon: 'error',
+        title: 'Erro ao excluir',
+        text: errorMessage,
+        confirmButtonColor: '#dc3545'
+      });
     }
   },
   getStatusBadgeClass(status) {
@@ -1143,6 +1363,281 @@
         return 'bg-info';
       default:
         return 'bg-secondary';
+    }
+  },
+  // Métodos de Ingressos
+  async fetchIngressos() {
+    try {
+      const todosIngressos = await getIngressos();
+      // Filtrar apenas ingressos dos eventos do organizador
+      const eventosIds = this.events.map(e => e.id);
+      this.ingressos = todosIngressos.filter(ing => eventosIds.includes(ing.EventoId));
+    } catch (error) {
+      console.error('Erro ao buscar ingressos:', error);
+      this.ingressos = [];
+    }
+  },
+  getEventoNome(eventoId) {
+    const evento = this.events.find(e => e.id === eventoId);
+    return evento ? evento.nomeevento : 'Evento não encontrado';
+  },
+  getEventoQuantidadeIngressos(eventoId) {
+    if (!eventoId) return null;
+    const evento = this.events.find(e => e.id === parseInt(eventoId));
+    return evento ? (evento.quantidadeingresso || 0) : null;
+  },
+  openAddIngressoModal() {
+    this.resetIngressoForm();
+    this.$nextTick(() => {
+      const modalElement = document.getElementById('ingressoModal');
+      if (modalElement) {
+        const bootstrap = window.bootstrap;
+        if (bootstrap && bootstrap.Modal) {
+          let modal = bootstrap.Modal.getInstance(modalElement);
+          if (!modal) {
+            modal = new bootstrap.Modal(modalElement);
+          }
+          modal.show();
+        }
+      }
+    });
+  },
+  closeIngressoModal() {
+    const modalElement = document.getElementById('ingressoModal');
+    if (modalElement) {
+      const bootstrap = window.bootstrap;
+      if (bootstrap && bootstrap.Modal) {
+        const modal = bootstrap.Modal.getInstance(modalElement);
+        if (modal) {
+          modal.hide();
+        }
+      }
+    }
+    this.isEditingIngresso = false;
+    this.editingIngressId = null;
+    this.resetIngressoForm();
+  },
+  resetIngressoForm() {
+    this.newIngresso = {
+      eventoId: '',
+      tipoingresso: '',
+      preco: '',
+      quantidadeTotal: '',
+      quantidadeDisponivel: ''
+    };
+  },
+  onEventoSelected() {
+    // Quando um evento é selecionado, preencher automaticamente a quantidade total
+    if (this.newIngresso.eventoId) {
+      const quantidadeEvento = this.getEventoQuantidadeIngressos(this.newIngresso.eventoId);
+      if (quantidadeEvento && quantidadeEvento > 0) {
+        this.newIngresso.quantidadeTotal = quantidadeEvento;
+        // Por padrão, quantidade disponível = quantidade total
+        this.newIngresso.quantidadeDisponivel = quantidadeEvento;
+      }
+    } else {
+      this.newIngresso.quantidadeTotal = '';
+      this.newIngresso.quantidadeDisponivel = '';
+    }
+  },
+  editIngresso(ingresso) {
+    this.isEditingIngresso = true;
+    this.editingIngressId = ingresso.id;
+    this.newIngresso = {
+      eventoId: ingresso.EventoId || '',
+      tipoingresso: ingresso.tipoingresso || '',
+      preco: ingresso.preco || '',
+      quantidadeTotal: ingresso.quantidadeTotal || '',
+      quantidadeDisponivel: ingresso.quantidadeDisponivel || ''
+    };
+    this.openAddIngressoModal();
+  },
+  async saveIngresso() {
+    try {
+      if (!this.validateIngressoForm()) return;
+      
+      if (!this.organizadorId) {
+        Swal.fire({
+          icon: 'error',
+          title: 'Erro de autenticação',
+          text: 'Faça login novamente.',
+          confirmButtonColor: '#dc3545'
+        }).then(() => {
+          this.$router.push('/auth/login');
+        });
+        return;
+      }
+      
+      const precoValue = this.newIngresso.preco === '' || this.newIngresso.preco === null || this.newIngresso.preco === undefined 
+        ? 0 
+        : parseFloat(this.newIngresso.preco);
+      
+      const ingressoData = {
+        usuarioId: this.organizadorId,
+        eventoId: parseInt(this.newIngresso.eventoId),
+        tipoingresso: this.newIngresso.tipoingresso || null,
+        preco: precoValue >= 0 ? precoValue : 0,
+        quantidadeTotal: parseInt(this.newIngresso.quantidadeTotal) || 0,
+        quantidadeDisponivel: parseInt(this.newIngresso.quantidadeDisponivel) || 0
+      };
+
+      if (this.isEditingIngresso && this.editingIngressId) {
+        // Atualizar ingresso existente
+        try {
+          await atualizarIngresso(this.editingIngressId, ingressoData);
+          await Swal.fire({
+            icon: 'success',
+            title: 'Sucesso!',
+            text: 'Ingresso atualizado com sucesso!',
+            timer: 2000,
+            showConfirmButton: false
+          });
+        } catch (error) {
+          if (error.response?.status === 404 || error.response?.status === 501) {
+            Swal.fire({
+              icon: 'info',
+              title: 'Funcionalidade não disponível',
+              text: 'A edição de ingressos ainda não está implementada no backend.',
+              confirmButtonColor: '#7749F8'
+            });
+            return;
+          }
+          throw error;
+        }
+      } else {
+        // Criar novo ingresso
+        await criarIngresso(ingressoData);
+        await Swal.fire({
+          icon: 'success',
+          title: 'Sucesso!',
+          text: 'Ingresso adicionado com sucesso!',
+          timer: 2000,
+          showConfirmButton: false
+        });
+      }
+      
+      await this.fetchIngressos();
+      this.closeIngressoModal();
+      
+    } catch (error) {
+      console.error('Erro ao salvar ingresso:', error);
+      let errorMessage = this.isEditingIngresso ? 'Erro ao atualizar ingresso' : 'Erro ao adicionar ingresso';
+      
+      if (error.response) {
+        if (error.response.data && error.response.data.message) {
+          errorMessage = error.response.data.message;
+        } else if (error.response.status === 401) {
+          errorMessage = 'Você não está autenticado';
+        } else if (error.response.status === 403) {
+          errorMessage = 'Você não tem permissão para esta ação';
+        } else if (error.response.status === 404) {
+          errorMessage = 'Evento ou usuário não encontrado';
+        }
+      }
+      
+      Swal.fire({
+        icon: 'error',
+        title: 'Erro',
+        text: errorMessage,
+        confirmButtonColor: '#dc3545'
+      }).then(() => {
+        if (error.response?.status === 401) {
+          this.$router.push('/auth/login');
+        }
+      });
+    }
+  },
+  validateIngressoForm() {
+    const errors = [];
+    
+    if (!this.newIngresso.eventoId) errors.push('Evento é obrigatório');
+    if (this.newIngresso.preco === '' || this.newIngresso.preco === null || parseFloat(this.newIngresso.preco) < 0) {
+      errors.push('Preço deve ser um valor válido (0 para gratuito)');
+    }
+    const quantidadeMaximaEvento = this.getEventoQuantidadeIngressos(this.newIngresso.eventoId);
+    
+    if (!this.newIngresso.quantidadeTotal || parseInt(this.newIngresso.quantidadeTotal) < 1) {
+      errors.push('Quantidade total deve ser maior que zero');
+    }
+    
+    if (quantidadeMaximaEvento && parseInt(this.newIngresso.quantidadeTotal) > quantidadeMaximaEvento) {
+      errors.push(`Quantidade total não pode ser maior que ${quantidadeMaximaEvento} (quantidade do evento)`);
+    }
+    
+    if (this.newIngresso.quantidadeDisponivel === '' || parseInt(this.newIngresso.quantidadeDisponivel) < 0) {
+      errors.push('Quantidade disponível deve ser um valor válido');
+    }
+    
+    if (parseInt(this.newIngresso.quantidadeDisponivel) > parseInt(this.newIngresso.quantidadeTotal)) {
+      errors.push('Quantidade disponível não pode ser maior que a quantidade total');
+    }
+
+    if (errors.length > 0) {
+      Swal.fire({
+        icon: 'warning',
+        title: 'Campos inválidos',
+        html: errors.map(err => `• ${err}`).join('<br>'),
+        confirmButtonColor: '#7749F8'
+      });
+      return false;
+    }
+
+    return true;
+  },
+  openDeleteIngressoModal(ingresso) {
+    this.ingressoToDelete = ingresso;
+    this.$nextTick(() => {
+      const modalElement = document.getElementById('deleteIngressoModal');
+      if (modalElement) {
+        const bootstrap = window.bootstrap;
+        if (bootstrap && bootstrap.Modal) {
+          let modal = bootstrap.Modal.getInstance(modalElement);
+          if (!modal) {
+            modal = new bootstrap.Modal(modalElement);
+          }
+          modal.show();
+        }
+      }
+    });
+  },
+  closeDeleteIngressoModal() {
+    const modalElement = document.getElementById('deleteIngressoModal');
+    if (modalElement) {
+      const bootstrap = window.bootstrap;
+      if (bootstrap && bootstrap.Modal) {
+        const modal = bootstrap.Modal.getInstance(modalElement);
+        if (modal) {
+          modal.hide();
+        }
+      }
+    }
+    this.ingressoToDelete = null;
+  },
+  async deleteIngresso() {
+    try {
+      if (!this.ingressoToDelete) return;
+
+      await deletarIngresso(this.ingressoToDelete.id);
+      await this.fetchIngressos();
+      this.closeDeleteIngressoModal();
+      
+      await Swal.fire({
+        icon: 'success',
+        title: 'Sucesso!',
+        text: 'Ingresso excluído com sucesso!',
+        timer: 2000,
+        showConfirmButton: false
+      });
+    } catch (error) {
+      console.error('Erro ao excluir ingresso:', error);
+      const errorMessage = error.response?.data?.message || error.message || 'Erro ao excluir ingresso';
+      
+      Swal.fire({
+        icon: 'error',
+        title: 'Erro ao excluir',
+        text: errorMessage,
+        confirmButtonColor: '#dc3545'
+      });
     }
   },
 }
