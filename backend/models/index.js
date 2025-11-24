@@ -29,13 +29,11 @@ Usuario.hasMany(Evento, { foreignKey: 'OrganizadorId' });
 Evento.belongsTo(Usuario, { as: 'Organizador', foreignKey: 'OrganizadorId' });
 
 Evento.hasMany(Ingresso, { foreignKey: 'EventoId' });
-Ingresso.belongsTo(Evento, { foreignKey: 'EventoId' });
+Ingresso.belongsTo(Evento, { foreignKey: 'EventoId', as: 'evento' });
 
 
-Ingresso.belongsTo(Usuario);
-// Ingresso.belongsTo(Evento);
-Usuario.hasMany(Ingresso);
-// Evento.hasMany(Ingresso);
+// Ingresso não tem UsuarioId diretamente, apenas EventoId
+// O relacionamento com Usuario é através do Evento
 
 
 Usuario.hasMany(Compras);

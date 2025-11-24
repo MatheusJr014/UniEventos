@@ -131,6 +131,11 @@ export const getIngressosPorEvento = async (eventoId) => {
   return data;
 };
 
+export const getIngressosPorOrganizador = async (organizadorId) => {
+  const { data } = await api.get(`/ingressos?OrganizadorId=${organizadorId}`);
+  return data;
+};
+
 export const criarIngresso = async (ingressoData) => {
   const { data } = await api.post("/ingressos", ingressoData);
   return data;
@@ -141,8 +146,11 @@ export const atualizarIngresso = async (id, ingressoData) => {
   return data;
 };
 
-export const deletarIngresso = async (id) => {
-  const { data } = await api.delete(`/ingressos/${id}`);
+export const deletarIngresso = async (id, organizadorId) => {
+  const url = organizadorId 
+    ? `/ingressos/${id}?OrganizadorId=${organizadorId}`
+    : `/ingressos/${id}`;
+  const { data } = await api.delete(url);
   return data;
 };
 

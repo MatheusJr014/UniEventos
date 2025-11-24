@@ -14,6 +14,11 @@ const ingressoController = require('../controllers/ingressosController');
  *         schema:
  *           type: integer
  *         description: Filtrar ingressos por ID do evento
+ *       - in: query
+ *         name: OrganizadorId
+ *         schema:
+ *           type: integer
+ *         description: Filtrar ingressos por ID do organizador (através dos eventos)
  *     responses:
  *       200:
  *         description: Lista de ingressos retornada com sucesso

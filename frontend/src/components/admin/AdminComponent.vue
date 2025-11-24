@@ -95,7 +95,7 @@
                     <div class="d-flex justify-content-between align-items-center">
                       <div>
                         <h6 class="card-subtitle text-muted">Total de Eventos</h6>
-                        <h2 class="card-title mb-0">245</h2>
+                        <h2 class="card-title mb-0">{{ totalEventos }}</h2>
                       </div>
                       <div class="icon-box bg-primary bg-opacity-10 text-primary">
                         <i class="bi bi-calendar-event"></i>
@@ -903,7 +903,7 @@
   </template>
   
 <script>
-  import { criarEvento, atualizarEvento, deletarEvento, getEventosPorOrganizador, getIngressos, getUsuarioById, criarIngresso, atualizarIngresso, deletarIngresso } from '@/services/api';
+  import { criarEvento, atualizarEvento, deletarEvento, getEventosPorOrganizador, getIngressosPorEvento, getUsuarioById, criarIngresso, atualizarIngresso, deletarIngresso } from '@/services/api';
   import { jwtDecode } from 'jwt-decode';
   import Swal from 'sweetalert2';
 
@@ -979,6 +979,9 @@
           
           return matchesSearch && matchesCategory && matchesStatus;
         });
+      },
+      totalEventos() {
+        return this.events.length || 0;
       }
     },
     created() {
@@ -1060,27 +1063,39 @@
 
         this.isLoading = true;
         try {
+          // Buscar apenas eventos do organizador logado
           const eventos = await getEventosPorOrganizador(this.organizadorId);
           
-          const ingressos = await getIngressos();
+          // Buscar ingressos de cada evento usando EventoId
+          const eventosComIngressos = [];
+          for (const evento of eventos) {
+            try {
+              // Buscar ingressos deste evento específico usando EventoId
+              const ingressosDoEvento = await getIngressosPorEvento(evento.id);
+              
+              eventosComIngressos.push({
+                ...evento,
+                ingressos: ingressosDoEvento,
+                precoMinimo:
+                  ingressosDoEvento.length > 0
+                    ? Math.min(...ingressosDoEvento.map((i) => parseFloat(i.preco)))
+                    : 0,
+              });
+            } catch (error) {
+              console.error(`Erro ao buscar ingressos do evento ${evento.id}:`, error);
+              // Adicionar evento mesmo sem ingressos
+              eventosComIngressos.push({
+                ...evento,
+                ingressos: [],
+                precoMinimo: 0,
+              });
+            }
+          }
 
-          this.events = eventos.map((evento) => {
-            const ingressosDoEvento = ingressos.filter(
-              (ingresso) => ingresso.EventoId === evento.id
-            );
-            return {
-              ...evento,
-              ingressos: ingressosDoEvento,
-              precoMinimo:
-                ingressosDoEvento.length > 0
-                  ? Math.min(...ingressosDoEvento.map((i) => parseFloat(i.preco)))
-                  : 0,
-            };
-          });
-
+          this.events = eventosComIngressos;
           this.error = null;
           
-          // Buscar ingressos após carregar eventos
+          // Buscar ingressos após carregar eventos (para a tabela de ingressos)
           await this.fetchIngressos();
         } catch (err) {
           console.error("Erro na API:", err);
@@ -1368,10 +1383,27 @@
   // Métodos de Ingressos
   async fetchIngressos() {
     try {
-      const todosIngressos = await getIngressos();
-      // Filtrar apenas ingressos dos eventos do organizador
+      if (!this.organizadorId || this.events.length === 0) {
+        console.error('Organizador ID não disponível ou eventos não carregados');
+        this.ingressos = [];
+        return;
+      }
+      
+      // Buscar ingressos de cada evento do organizador
       const eventosIds = this.events.map(e => e.id);
-      this.ingressos = todosIngressos.filter(ing => eventosIds.includes(ing.EventoId));
+      const todosIngressos = [];
+      
+      // Buscar ingressos para cada evento
+      for (const eventoId of eventosIds) {
+        try {
+          const ingressosDoEvento = await getIngressosPorEvento(eventoId);
+          todosIngressos.push(...ingressosDoEvento);
+        } catch (error) {
+          console.error(`Erro ao buscar ingressos do evento ${eventoId}:`, error);
+        }
+      }
+      
+      this.ingressos = todosIngressos;
     } catch (error) {
       console.error('Erro ao buscar ingressos:', error);
       this.ingressos = [];
@@ -1617,7 +1649,7 @@
     try {
       if (!this.ingressoToDelete) return;
 
-      await deletarIngresso(this.ingressoToDelete.id);
+      await deletarIngresso(this.ingressoToDelete.id, this.organizadorId);
       await this.fetchIngressos();
       this.closeDeleteIngressoModal();
       

@@ -2,14 +2,32 @@ const { Ingresso, Evento, Usuario } = require("../models");
 
 exports.getAllIngresso = async (req, res) => {
   try {
-    const { EventoId } = req.query;
+    const { EventoId, OrganizadorId } = req.query;
 
     const where = {};
+    const include = [];
+
+    // Se OrganizadorId for fornecido, filtrar ingressos dos eventos desse organizador
+    if (OrganizadorId) {
+      include.push({
+        model: Evento,
+        as: 'evento',
+        where: { OrganizadorId: OrganizadorId },
+        attributes: ['id', 'nomeevento', 'OrganizadorId']
+      });
+    }
+
+    // Se EventoId for fornecido, filtrar por evento específico
     if (EventoId) {
       where.EventoId = EventoId;
     }
 
-    const ingressos = await Ingresso.findAll({ where });
+    const options = { where };
+    if (include.length > 0) {
+      options.include = include;
+    }
+
+    const ingressos = await Ingresso.findAll(options);
     res.json(ingressos);
   } catch (error) {
     console.error("Erro ao buscar ingressos:", error);
@@ -44,8 +62,14 @@ exports.createIngresso = async (req, res) => {
         .json({ message: "Usuario ou evento não encontrado" });
     }
 
+    // Validar que o evento pertence ao organizador
+    if (evento.OrganizadorId !== parseInt(usuarioId)) {
+      return res
+        .status(403)
+        .json({ message: "Você não tem permissão para criar ingressos para este evento" });
+    }
+
     const ingresso = await Ingresso.create({
-      UsuarioId: usuarioId,
       EventoId: eventoId,
       tipoingresso: tipoingresso || null,
       preco: preco || null,
@@ -61,7 +85,29 @@ exports.createIngresso = async (req, res) => {
 };
 
 exports.deleteIngresso = async (req, res) => {
-  const deleted = await Ingresso.destroy({ where: { id: req.params.id } });
-  if (deleted) return res.json({ message: "Ingresso removido" });
-  res.status(404).json({ error: "Ingresso não encontrado" });
+  try {
+    const ingresso = await Ingresso.findByPk(req.params.id, {
+      include: [{
+        model: Evento,
+        as: 'evento',
+        attributes: ['id', 'OrganizadorId']
+      }]
+    });
+
+    if (!ingresso) {
+      return res.status(404).json({ error: "Ingresso não encontrado" });
+    }
+
+    // Se OrganizadorId for fornecido na query, validar permissão
+    const { OrganizadorId } = req.query;
+    if (OrganizadorId && ingresso.evento && ingresso.evento.OrganizadorId !== parseInt(OrganizadorId)) {
+      return res.status(403).json({ message: "Você não tem permissão para excluir este ingresso" });
+    }
+
+    await ingresso.destroy();
+    res.json({ message: "Ingresso removido" });
+  } catch (error) {
+    console.error("Erro ao excluir ingresso:", error);
+    res.status(500).json({ error: "Erro interno do servidor" });
+  }
 };
