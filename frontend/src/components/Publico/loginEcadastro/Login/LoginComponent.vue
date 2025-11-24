@@ -28,7 +28,7 @@
                     <div class="d-flex justify-content-between">
                         <label for="loginPassword" class="form-label">Senha</label>
                         <a href="#" class="text-decoration-none small"
-                            @click.prevent="showForgotPassword = true">Esqueceu a senha?</a>
+                            @click.prevent="$emit('show-forgot-password')">Esqueceu a senha?</a>
                     </div>
                     <div class="input-group">
                         <input :type="showLoginPassword ? 'text' : 'password'" class="form-control" id="loginPassword"
@@ -68,11 +68,11 @@ import { loginUsuario } from '@/services/api';
 
 export default {
     name: 'LoginComponent',
+    emits: ['show-forgot-password'],
     data() {
         return {
             loginLoading: false,
             showLoginPassword: false,
-            showForgotPassword: false,
             email: '',
             senha: ''    
         }

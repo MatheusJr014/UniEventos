@@ -51,7 +51,14 @@
                                                 </ul>
                                             </div>
                                             <div>
-                                                <LoginComponent v-if="isLogin"/>
+                                                <LoginComponent 
+                                                    v-if="isLogin && !showForgotPassword" 
+                                                    @show-forgot-password="showForgotPassword = true"
+                                                />
+                                                <ForgotPasswordComponent 
+                                                    v-else-if="isLogin && showForgotPassword"
+                                                    @back-to-login="showForgotPassword = false"
+                                                />
                                                 <CadastroComponent v-else />
                                             </div>
                                         </div>
@@ -70,22 +77,34 @@
 
 import LoginComponent from '@/components/Publico/loginEcadastro/Login/LoginComponent.vue';
 import CadastroComponent from '@/components/Publico/loginEcadastro/Cadastro/CadastroComponent.vue';
+import ForgotPasswordComponent from '@/components/Publico/loginEcadastro/ForgotPassword/ForgotPasswordComponent.vue';
+
 export default {
     name: 'MainComponent',
     components: {
         LoginComponent,
-        CadastroComponent
+        CadastroComponent,
+        ForgotPasswordComponent
     },
     data() {
         return {
             isLogin: false,
             activeTab: 'register',
+            showForgotPassword: false,
             showLoginPassword: false,
             showRegisterPassword: false,
             showRegisterConfirmPassword: false,
             loginLoading: false,
             registerLoading: false,
         };
+    },
+    watch: {
+        isLogin(newVal) {
+            // Resetar o estado de esqueceu senha quando mudar entre login e cadastro
+            if (!newVal) {
+                this.showForgotPassword = false;
+            }
+        }
     },
     methods: {
 

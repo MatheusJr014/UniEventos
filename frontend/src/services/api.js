@@ -108,6 +108,24 @@ export const loginUsuario = async (payload) => {
   }
 };
 
+export const forgotPassword = async (email) => {
+  try {
+    // TODO: Implementar quando a rota estiver disponível no backend
+    // const { data } = await api.post('/login/forgot-password', { email });
+    // return data;
+    
+    // Simulação temporária (remover quando API estiver pronta)
+    throw new Error('API não implementada ainda');
+  } catch (error) {
+    throw {
+      response: {
+        status: error.response?.status || 501
+      },
+      message: error.message
+    };
+  }
+};
+
 export const getIngressosPorEvento = async (eventoId) => {
   const { data } = await api.get(`/ingressos?EventoId=${eventoId}`);
   return data;
