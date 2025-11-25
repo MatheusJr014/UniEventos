@@ -159,7 +159,8 @@
                                                 <label for="phone" class="form-label">Telefone</label>
                                                 <div class="input-group">
                                                     <input type="tel" class="form-control" id="phone"
-                                                        v-model="userData.phone" :disabled="!editMode">
+                                                        v-model="userData.telefone" :disabled="!editMode"
+                                                        placeholder="(00) 00000-0000">
                                                     <span v-if="userData.phoneVerified"
                                                         class="input-group-text bg-success text-white"
                                                         title="Telefone verificado">
@@ -174,11 +175,11 @@
                                             <div class="col-md-6">
                                                 <label for="birthdate" class="form-label">Data de Nascimento</label>
                                                 <input type="date" class="form-control" id="birthdate"
-                                                    v-model="userData.birthdate" :disabled="!editMode">
+                                                    v-model="userData.datanascimento" :disabled="!editMode">
                                             </div>
                                             <div class="col-md-6">
                                                 <label for="gender" class="form-label">Gênero</label>
-                                                <select class="form-select" id="gender" v-model="userData.gender"
+                                                <select class="form-select" id="gender" v-model="userData.genero"
                                                     :disabled="!editMode">
                                                     <option value="">Selecione</option>
                                                     <option value="male">Masculino</option>
@@ -195,16 +196,17 @@
                                             <div class="col-12">
                                                 <label for="address" class="form-label">Endereço</label>
                                                 <input type="text" class="form-control" id="address"
-                                                    v-model="userData.address" :disabled="!editMode">
+                                                    v-model="userData.endereco" :disabled="!editMode"
+                                                    placeholder="Rua, número, complemento">
                                             </div>
                                             <div class="col-md-4">
                                                 <label for="city" class="form-label">Cidade</label>
-                                                <input type="text" class="form-control" id="city" v-model="userData.city"
+                                                <input type="text" class="form-control" id="city" v-model="userData.cidade"
                                                     :disabled="!editMode">
                                             </div>
                                             <div class="col-md-4">
                                                 <label for="state" class="form-label">Estado</label>
-                                                <select class="form-select" id="state" v-model="userData.state"
+                                                <select class="form-select" id="state" v-model="userData.estado"
                                                     :disabled="!editMode">
                                                     <option value="">Selecione</option>
                                                     <option v-for="state in states" :key="state.value"
@@ -214,7 +216,8 @@
                                             <div class="col-md-4">
                                                 <label for="zipcode" class="form-label">CEP</label>
                                                 <input type="text" class="form-control" id="zipcode"
-                                                    v-model="userData.zipcode" :disabled="!editMode">
+                                                    v-model="userData.cep" :disabled="!editMode"
+                                                    placeholder="00000-000">
                                             </div>
                                             <div class="col-12" v-if="editMode">
                                                 <button type="submit" class="btn btn-primary">Salvar Alterações</button>
@@ -235,7 +238,7 @@
 </template>
 
 <script>
-import { getUsuarioById } from '@/services/api';
+import { getUsuarioById, atualizarUsuario } from '@/services/api';
 import axios from 'axios';
 import { jwtDecode } from 'jwt-decode';
 import Swal from 'sweetalert2';
@@ -250,11 +253,40 @@ export default {
             activeTab: 'personal',
             tabs: [
                 { id: 'personal', nome: 'Informações Pessoais', icon: 'bi-person' },
-                { id: 'tickets', nome: 'Meus Ingressos', icon: 'bi-ticket-perforated' },
+                // { id: 'tickets', nome: 'Meus Ingressos', icon: 'bi-ticket-perforated' },
                 { id: 'history', nome: 'Histórico de Eventos', icon: 'bi-clock-history' },
                 { id: 'favorites', nome: 'Favoritos', icon: 'bi-heart' },
                 { id: 'preferences', nome: 'Preferências', icon: 'bi-gear' },
                 { id: 'security', nome: 'Segurança', icon: 'bi-shield-lock' }
+            ],
+            states: [
+                { value: 'AC', label: 'Acre' },
+                { value: 'AL', label: 'Alagoas' },
+                { value: 'AP', label: 'Amapá' },
+                { value: 'AM', label: 'Amazonas' },
+                { value: 'BA', label: 'Bahia' },
+                { value: 'CE', label: 'Ceará' },
+                { value: 'DF', label: 'Distrito Federal' },
+                { value: 'ES', label: 'Espírito Santo' },
+                { value: 'GO', label: 'Goiás' },
+                { value: 'MA', label: 'Maranhão' },
+                { value: 'MT', label: 'Mato Grosso' },
+                { value: 'MS', label: 'Mato Grosso do Sul' },
+                { value: 'MG', label: 'Minas Gerais' },
+                { value: 'PA', label: 'Pará' },
+                { value: 'PB', label: 'Paraíba' },
+                { value: 'PR', label: 'Paraná' },
+                { value: 'PE', label: 'Pernambuco' },
+                { value: 'PI', label: 'Piauí' },
+                { value: 'RJ', label: 'Rio de Janeiro' },
+                { value: 'RN', label: 'Rio Grande do Norte' },
+                { value: 'RS', label: 'Rio Grande do Sul' },
+                { value: 'RO', label: 'Rondônia' },
+                { value: 'RR', label: 'Roraima' },
+                { value: 'SC', label: 'Santa Catarina' },
+                { value: 'SP', label: 'São Paulo' },
+                { value: 'SE', label: 'Sergipe' },
+                { value: 'TO', label: 'Tocantins' }
             ]
             // user: {
             //     id: 1,
@@ -284,10 +316,109 @@ export default {
         this.fetchUserData();
     },
     methods: {
-        saveProfile() {
-            // Implementar lógica para salvar o perfil
-            alert('Perfil salvo com sucesso!');
-            this.editMode = false;
+        async saveProfile() {
+            const token = localStorage.getItem('token');
+            if (!token) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Erro',
+                    text: 'Você precisa estar logado para salvar o perfil.',
+                    confirmButtonColor: '#dc3545'
+                });
+                return;
+            }
+
+            try {
+                const decodedToken = jwtDecode(token);
+                const usuarioId = decodedToken.id;
+
+                if (!usuarioId) {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Erro',
+                        text: 'ID do usuário não encontrado.',
+                        confirmButtonColor: '#dc3545'
+                    });
+                    return;
+                }
+
+                // Preparar dados para envio
+                const dadosAtualizacao = {
+                    nome: this.userData.nome,
+                    sobrenome: this.userData.sobrenome || '',
+                    email: this.userData.email,
+                    cpf: this.userData.cpf,
+                    telefone: this.userData.telefone || null,
+                    datanascimento: this.userData.datanascimento || null,
+                    genero: this.userData.genero || null,
+                    cidade: this.userData.cidade || null,
+                    estado: this.userData.estado || null,
+                    cep: this.userData.cep || null,
+                    endereco: this.userData.endereco || null
+                };
+
+                // Atualizar no backend
+                await atualizarUsuario(usuarioId, dadosAtualizacao, token);
+
+                // Atualizar dados locais
+                const dadosAtualizados = await getUsuarioById(usuarioId, token);
+                
+                // Mapear campos do backend para o formato esperado no frontend
+                this.userData = {
+                    ...dadosAtualizados,
+                    telefone: dadosAtualizados.telefone || '',
+                    datanascimento: dadosAtualizados.datanascimento || '',
+                    genero: dadosAtualizados.genero || '',
+                    cidade: dadosAtualizados.cidade || '',
+                    estado: dadosAtualizados.estado || '',
+                    cep: dadosAtualizados.cep || '',
+                    endereco: dadosAtualizados.endereco || '',
+                    // Campos para compatibilidade com o template
+                    phone: dadosAtualizados.telefone || '',
+                    birthdate: dadosAtualizados.datanascimento || '',
+                    gender: dadosAtualizados.genero || '',
+                    city: dadosAtualizados.cidade || '',
+                    state: dadosAtualizados.estado || '',
+                    zipcode: dadosAtualizados.cep || '',
+                    address: dadosAtualizados.endereco || '',
+                    // Preservar campos fictícios do template
+                    eventsAttended: this.userData?.eventsAttended || 0,
+                    favoriteEvents: this.userData?.favoriteEvents || 0,
+                    profileCompletion: this.userData?.profileCompletion || 0,
+                    emailVerified: this.userData?.emailVerified || false,
+                    phoneVerified: this.userData?.phoneVerified || false,
+                    preferencesSet: this.userData?.preferencesSet || false
+                };
+
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Sucesso!',
+                    text: 'Perfil atualizado com sucesso!',
+                    timer: 2000,
+                    showConfirmButton: false
+                });
+
+                this.editMode = false;
+            } catch (error) {
+                console.error('Erro ao salvar perfil:', error);
+                let mensagemErro = 'Erro ao salvar perfil. Tente novamente.';
+
+                if (error.response?.status === 401) {
+                    mensagemErro = 'Sessão expirada. Faça login novamente.';
+                    localStorage.removeItem('token');
+                    this.$router.push('/auth/login');
+                    return;
+                } else if (error.response?.data?.error) {
+                    mensagemErro = error.response.data.error;
+                }
+
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Erro ao salvar',
+                    text: mensagemErro,
+                    confirmButtonColor: '#dc3545'
+                });
+            }
         },
         async fetchUserData() {
             const token = localStorage.getItem('token');
@@ -306,7 +437,34 @@ export default {
                     return;
                 }
 
-                this.userData = await getUsuarioById(usuarioId, token);
+                const dadosUsuario = await getUsuarioById(usuarioId, token);
+                
+                // Mapear campos do backend para o formato esperado no frontend
+                this.userData = {
+                    ...dadosUsuario,
+                    telefone: dadosUsuario.telefone || '',
+                    datanascimento: dadosUsuario.datanascimento || '',
+                    genero: dadosUsuario.genero || '',
+                    cidade: dadosUsuario.cidade || '',
+                    estado: dadosUsuario.estado || '',
+                    cep: dadosUsuario.cep || '',
+                    endereco: dadosUsuario.endereco || '',
+                    // Campos para compatibilidade com o template
+                    phone: dadosUsuario.telefone || '',
+                    birthdate: dadosUsuario.datanascimento || '',
+                    gender: dadosUsuario.genero || '',
+                    city: dadosUsuario.cidade || '',
+                    state: dadosUsuario.estado || '',
+                    zipcode: dadosUsuario.cep || '',
+                    address: dadosUsuario.endereco || '',
+                    // Campos fictícios para o template
+                    eventsAttended: dadosUsuario.eventsAttended || 0,
+                    favoriteEvents: dadosUsuario.favoriteEvents || 0,
+                    profileCompletion: dadosUsuario.profileCompletion || 0,
+                    emailVerified: dadosUsuario.emailVerified || false,
+                    phoneVerified: dadosUsuario.phoneVerified || false,
+                    preferencesSet: dadosUsuario.preferencesSet || false
+                };
                 
             } catch (error) {
                 console.error('Erro ao buscar os dados do usuário: ', error);
@@ -325,6 +483,19 @@ export default {
                     text: mensagemErro,
                     confirmButtonColor: '#dc3545'
                 });
+            }
+        },
+        formatDate(dateString) {
+            if (!dateString) return 'N/A';
+            try {
+                const date = new Date(dateString);
+                return date.toLocaleDateString('pt-BR', {
+                    day: '2-digit',
+                    month: '2-digit',
+                    year: 'numeric'
+                });
+            } catch (error) {
+                return dateString;
             }
         }
     }

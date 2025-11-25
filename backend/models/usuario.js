@@ -19,13 +19,44 @@ module.exports = (sequelize) => {
         isEmail: true
       }
     }, 
-    cpf: {
+    cpf: { 
       type: DataTypes.STRING, 
       allowNull: false,
       unique: true
-    }, 
+    },
+    telefone: {
+      type: DataTypes.STRING,
+      allowNull: true
+    },
+    datanascimento: {
+      type: DataTypes.DATE,
+      allowNull: true
+    },
+    genero: {
+      type: DataTypes.STRING,
+      allowNull: true,
+      validate: {
+        isIn: [['male', 'female', 'other', 'prefer_not_to_say', null]]
+      }
+    },
+    cidade: {
+      type: DataTypes.STRING,
+      allowNull: true
+    },
+    estado: {
+      type: DataTypes.STRING,
+      allowNull: true
+    },
+    cep: {
+      type: DataTypes.STRING,
+      allowNull: true
+    },
+    endereco: {
+      type: DataTypes.STRING,
+      allowNull: true
+    },
     senha: DataTypes.STRING, 
-    tipouser: DataTypes.BOOLEAN, 
+    tipouser: DataTypes.BOOLEAN,
   }, {
     hooks: {
       beforeCreate: async (usuario) => {
