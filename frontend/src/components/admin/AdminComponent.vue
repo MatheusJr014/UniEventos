@@ -276,9 +276,31 @@
                           <tr>
                             <th scope="col">Usuário</th>
                             <th scope="col">Tipo</th>
-                            <th scope="col">Data de Cadastro</th>
+                            <th scope="col">Data da Compra</th>
                           </tr>
                         </thead>
+                        <tbody>
+                          <tr v-for="usuario in ultimosUsuarios" :key="usuario.id">
+                            <td>
+                              <div class="fw-bold">{{ usuario.nome || 'N/A' }}</div>
+                              <small class="text-muted">{{ usuario.email || '' }}</small>
+                            </td>
+                            <td>
+                              <span class="badge" :class="usuario.tipo === 'Organizador' ? 'bg-primary' : 'bg-secondary'">
+                                {{ usuario.tipo }}
+                              </span>
+                            </td>
+                            <td>{{ formatDate(usuario.dataCompra) }}</td>
+                          </tr>
+                          <tr v-if="ultimosUsuarios.length === 0">
+                            <td colspan="3" class="text-center py-4">
+                              <div class="text-muted">
+                                <i class="bi bi-people fs-4 d-block mb-2"></i>
+                                Nenhuma compra confirmada ainda.
+                              </div>
+                            </td>
+                          </tr>
+                        </tbody>
                       </table>
                     </div>
                   </div>
@@ -1169,6 +1191,41 @@
           return this.pedidos;
         }
         return this.pedidos.filter(p => p.statusPagamento === this.filterStatusPedido);
+      },
+      ultimosUsuarios() {
+        // Filtrar apenas pedidos confirmados do organizador
+        const pedidosConfirmados = this.pedidos.filter(p => p.statusPagamento === 'confirmado');
+        
+        // Criar um mapa para evitar duplicatas (mesmo usuário pode ter múltiplos pedidos)
+        // Vamos pegar o pedido mais recente de cada usuário
+        const usuariosMap = new Map();
+        
+        pedidosConfirmados
+          .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)) // Ordenar por data mais recente
+          .forEach(pedido => {
+            const usuarioId = pedido.UsuarioId || pedido.usuario?.id;
+            const nome = pedido.usuario?.nome || 'N/A';
+            const email = pedido.usuario?.email || '';
+            const tipouser = pedido.usuario?.tipouser;
+            
+            // Se ainda não temos este usuário ou este pedido é mais recente, adicionar/atualizar
+            if (usuarioId && !usuariosMap.has(usuarioId)) {
+              // tipouser é um booleano: true = Organizador, false/null/undefined = Cliente
+              // Verificar se tipouser é explicitamente true (pode vir como boolean, 1, ou 'true')
+              const tipoUsuario = (tipouser === true || tipouser === 1 || tipouser === 'true') ? 'Organizador' : 'Cliente';
+              
+              usuariosMap.set(usuarioId, {
+                id: usuarioId,
+                nome: nome,
+                email: email,
+                tipo: tipoUsuario,
+                dataCompra: pedido.createdAt
+              });
+            }
+          });
+        
+        // Converter para array e limitar aos últimos 10
+        return Array.from(usuariosMap.values()).slice(0, 10);
       },
       chartSeries() {
         // Agrupar pedidos confirmados por evento

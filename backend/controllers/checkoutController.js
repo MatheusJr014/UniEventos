@@ -348,7 +348,7 @@ exports.listarPedidos = async (req, res) => {
       {
         model: Usuario,
         as: 'usuario',
-        attributes: ['id', 'nome', 'email']
+        attributes: ['id', 'nome', 'email', 'tipouser']
       }
     ];
 
