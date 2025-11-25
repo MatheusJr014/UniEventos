@@ -7,6 +7,7 @@
     "test": "cross-env NODE_ENV=test jest --testTimeout=10000 --detectOpenHandles"
   },
   "dependencies": {
+    "apexcharts": "^5.3.6",
     "bcryptjs": "^3.0.2",
     "body-parser": "^1.20.2",
     "cors": "^2.8.5",
@@ -19,7 +20,8 @@
     "sequelize": "^6.37.7",
     "sequelize-cli": "^6.6.3",
     "swagger-jsdoc": "^6.2.8",
-    "swagger-ui-express": "^5.0.1"
+    "swagger-ui-express": "^5.0.1",
+    "vue3-apexcharts": "^1.10.0"
   },
   "devDependencies": {
     "cross-env": "^10.1.0",

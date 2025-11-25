@@ -185,11 +185,18 @@
                   </div>
                   <div class="card-body">
                     <div class="chart-container" style="height: 300px;">
-                      <!-- Placeholder for chart -->
-                      <div class="chart-placeholder d-flex align-items-center justify-content-center h-100 bg-light rounded">
+                      <apexchart
+                        v-if="chartOptions && chartSeries && chartSeries[0] && chartSeries[0].data && chartSeries[0].data.length > 0"
+                        type="bar"
+                        height="300"
+                        :options="chartOptions"
+                        :series="chartSeries"
+                      ></apexchart>
+                      <div v-else class="chart-placeholder d-flex align-items-center justify-content-center h-100 bg-light rounded">
                         <div class="text-center text-muted">
                           <i class="bi bi-bar-chart-line fs-1"></i>
-                          <p>Gráfico de Vendas de Ingressos</p>
+                          <p v-if="pedidos.length === 0">Carregando dados...</p>
+                          <p v-else>Nenhuma venda confirmada ainda</p>
                         </div>
                       </div>
                     </div>
@@ -1021,9 +1028,13 @@
   import { criarEvento, atualizarEvento, deletarEvento, getEventosPorOrganizador, getIngressosPorEvento, getUsuarioById, criarIngresso, atualizarIngresso, deletarIngresso, listarPedidos, atualizarStatusPedido } from '@/services/api';
   import { jwtDecode } from 'jwt-decode';
   import Swal from 'sweetalert2';
+  import VueApexCharts from 'vue3-apexcharts';
 
   export default {
     name: 'AdminPainel',
+    components: {
+      apexchart: VueApexCharts
+    },
     data() {
       return {
         sidebarCollapsed: false,
@@ -1150,6 +1161,154 @@
           return this.pedidos;
         }
         return this.pedidos.filter(p => p.statusPagamento === this.filterStatusPedido);
+      },
+      chartSeries() {
+        // Agrupar pedidos confirmados por evento
+        const vendasPorEvento = {};
+        
+        this.pedidos
+          .filter(p => p.statusPagamento === 'confirmado')
+          .forEach(pedido => {
+            const eventoId = pedido.EventoId || pedido.evento?.id;
+            const eventoNome = pedido.evento?.nomeevento || `Evento ${eventoId}`;
+            const quantidade = parseInt(pedido.quantidade) || 0;
+            
+            if (eventoId) {
+              if (!vendasPorEvento[eventoId]) {
+                vendasPorEvento[eventoId] = {
+                  nome: eventoNome,
+                  quantidade: 0
+                };
+              }
+              vendasPorEvento[eventoId].quantidade += quantidade;
+            }
+          });
+        
+        // Converter para array e ordenar por quantidade (maior para menor)
+        const dados = Object.values(vendasPorEvento)
+          .sort((a, b) => b.quantidade - a.quantidade);
+        
+        return [{
+          name: 'Ingressos Vendidos',
+          data: dados.length > 0 ? dados.map(item => item.quantidade) : []
+        }];
+      },
+      chartOptions() {
+        // Agrupar pedidos confirmados por evento para obter os nomes
+        const vendasPorEvento = {};
+        
+        this.pedidos
+          .filter(p => p.statusPagamento === 'confirmado')
+          .forEach(pedido => {
+            const eventoId = pedido.EventoId || pedido.evento?.id;
+            const eventoNome = pedido.evento?.nomeevento || `Evento ${eventoId}`;
+            const quantidade = parseInt(pedido.quantidade) || 0;
+            
+            if (eventoId) {
+              if (!vendasPorEvento[eventoId]) {
+                vendasPorEvento[eventoId] = {
+                  nome: eventoNome,
+                  quantidade: 0
+                };
+              }
+              vendasPorEvento[eventoId].quantidade += quantidade;
+            }
+          });
+        
+        // Converter para array e ordenar por quantidade
+        const dados = Object.values(vendasPorEvento)
+          .sort((a, b) => b.quantidade - a.quantidade);
+        
+        // Se não houver dados, retornar null para não renderizar o gráfico
+        if (dados.length === 0) {
+          return null;
+        }
+        
+        return {
+          chart: {
+            type: 'bar',
+            height: 300,
+            toolbar: {
+              show: false
+            },
+            zoom: {
+              enabled: false
+            }
+          },
+          plotOptions: {
+            bar: {
+              horizontal: false,
+              columnWidth: '55%',
+              borderRadius: 4,
+              dataLabels: {
+                position: 'top'
+              }
+            }
+          },
+          dataLabels: {
+            enabled: true,
+            formatter: function (val) {
+              return val;
+            },
+            offsetY: -20,
+            style: {
+              fontSize: '12px',
+              colors: ['#304758']
+            }
+          },
+          xaxis: {
+            categories: dados.map(item => {
+              // Truncar nomes muito longos
+              const nome = item.nome;
+              return nome.length > 20 ? nome.substring(0, 20) + '...' : nome;
+            }),
+            labels: {
+              rotate: -45,
+              rotateAlways: true,
+              style: {
+                fontSize: '11px'
+              }
+            }
+          },
+          yaxis: {
+            title: {
+              text: 'Quantidade de Ingressos'
+            },
+            labels: {
+              formatter: function (val) {
+                return Math.floor(val);
+              }
+            }
+          },
+          fill: {
+            type: 'gradient',
+            gradient: {
+              shade: 'light',
+              type: 'vertical',
+              shadeIntensity: 0.25,
+              gradientToColors: ['#7749F8'],
+              inverseColors: true,
+              opacityFrom: 1,
+              opacityTo: 1,
+              stops: [0, 100]
+            }
+          },
+          colors: ['#7749F8'],
+          tooltip: {
+            y: {
+              formatter: function (val) {
+                return val + ' ingressos';
+              }
+            }
+          },
+          grid: {
+            borderColor: '#e7e7e7',
+            row: {
+              colors: ['#f3f3f3', 'transparent'],
+              opacity: 0.5
+            }
+          }
+        };
       }
     },
     created() {
