@@ -178,6 +178,11 @@ const router = createRouter({
       component: CheckoutView
     },
     {
+      path: '/checkout/planos',
+      name: 'checkout-planos',
+      component: () => import('../views/Publico/CheckoutPlanosView.vue')
+    },
+    {
       path: '/checkout/success',
       name: 'checkout-success',
       component: CheckoutSuccessView

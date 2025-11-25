@@ -28,10 +28,13 @@
               <p class="lead mb-4">
                 Gerencie seus eventos de forma profissional e alcance mais pessoas com nossas ferramentas
               </p>
-              <router-link to="/auth/login" class="btn btn-light btn-lg">
+              <button 
+                class="btn btn-light btn-lg" 
+                @click="handleStartClick"
+              >
                 <i class="bi bi-rocket-takeoff me-2"></i>
                 Começar Agora
-              </router-link>
+              </button>
             </div>
           </div>
         </div>
@@ -181,9 +184,12 @@
                       <span class="text-muted">Relatórios avançados</span>
                     </li>
                   </ul>
-                  <router-link to="/auth/login" class="btn btn-outline-primary w-100">
+                  <button 
+                    class="btn btn-outline-primary w-100"
+                    @click="handlePlanClick('basico')"
+                  >
                     Começar Grátis
-                  </router-link>
+                  </button>
                 </div>
               </div>
             </div>
@@ -233,9 +239,12 @@
                       Relatórios avançados
                     </li>
                   </ul>
-                  <router-link to="/auth/login" class="btn btn-primary w-100">
+                  <button 
+                    class="btn btn-primary w-100"
+                    @click="handlePlanClick('profissional')"
+                  >
                     Assinar Agora
-                  </router-link>
+                  </button>
                 </div>
               </div>
             </div>
@@ -506,10 +515,13 @@
                 Junte-se a milhares de organizadores que já confiam na nossa plataforma
               </p>
               <div class="d-flex flex-column flex-sm-row gap-3 justify-content-center">
-                <router-link to="/auth/login" class="btn btn-light btn-lg">
+                <button 
+                  class="btn btn-light btn-lg"
+                  @click="handleStartClick"
+                >
                   <i class="bi bi-rocket-takeoff me-2"></i>
                   Criar Conta Grátis
-                </router-link>
+                </button>
                 <router-link to="/contato" class="btn btn-outline-light btn-lg">
                   <i class="bi bi-chat-dots me-2"></i>
                   Falar com Vendas
@@ -528,12 +540,79 @@
 <script>
 import NavBarComponents from '@/components/Publico/common/NavBarComponents.vue';
 import FooterComponents from '@/components/Publico/common/FooterComponents.vue';
+import { jwtDecode } from 'jwt-decode';
+import Swal from 'sweetalert2';
 
 export default {
   name: 'ParaOrganizadoresView',
   components: {
     NavBarComponents,
     FooterComponents
+  },
+  methods: {
+    checkIsOrganizador() {
+      const token = localStorage.getItem('token');
+      if (!token) {
+        return false;
+      }
+      
+      try {
+        const decoded = jwtDecode(token);
+        return decoded.tipo === true;
+      } catch (error) {
+        console.error('Erro ao decodificar token:', error);
+        return false;
+      }
+    },
+    handleStartClick() {
+      const token = localStorage.getItem('token');
+      
+      if (!token) {
+        // Se não estiver logado, redirecionar para login
+        this.$router.push('/auth/login');
+        return;
+      }
+      
+      if (!this.checkIsOrganizador()) {
+        Swal.fire({
+          icon: 'warning',
+          title: 'Acesso Restrito',
+          text: 'Você precisa ser um organizador para realizar a compra de planos.',
+          confirmButtonText: 'Entendi',
+          confirmButtonColor: '#7749f8'
+        });
+        return;
+      }
+      
+      // Se for organizador, redirecionar para checkout (sem plano específico, pode escolher depois)
+      this.$router.push('/checkout/planos');
+    },
+    handlePlanClick(plano) {
+      const token = localStorage.getItem('token');
+      
+      if (!token) {
+        // Se não estiver logado, redirecionar para login
+        this.$router.push('/auth/login');
+        return;
+      }
+      
+      if (!this.checkIsOrganizador()) {
+        Swal.fire({
+          icon: 'warning',
+          title: 'Acesso Restrito',
+          text: 'Você precisa ser um organizador para realizar a compra de planos.',
+          confirmButtonText: 'Entendi',
+          confirmButtonColor: '#7749f8'
+        });
+        return;
+      }
+      
+      // Se for organizador, redirecionar para checkout com o plano selecionado
+      this.$router.push({
+        path: '/checkout/planos',
+        query: { plano: plano }
+      });
+    }
   }
 };
 </script>
