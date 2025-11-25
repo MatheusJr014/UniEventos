@@ -477,6 +477,112 @@
               </div>
             </div>
           </div>
+
+          <!-- Pedidos Management -->
+          <div v-if="activeMenuItem === 'pedidos'">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+              <h4 class="mb-0">Gerenciamento de Pedidos</h4>
+            </div>
+  
+            <div class="card border-0 shadow-sm mb-4">
+              <div class="card-body">
+                <div class="row g-3 mb-4">
+                  <div class="col-md-4">
+                    <label class="form-label">Filtrar por Status</label>
+                    <select class="form-select" v-model="filterStatusPedido" @change="fetchPedidos">
+                      <option value="">Todos os Status</option>
+                      <option value="aguarde">Aguardando</option>
+                      <option value="confirmado">Confirmado</option>
+                      <option value="cancelado">Cancelado</option>
+                    </select>
+                  </div>
+                  <div class="col-md-4 d-flex align-items-end">
+                    <button class="btn btn-outline-secondary" @click="resetFilterPedidos">
+                      <i class="bi bi-x-circle me-2"></i>Limpar Filtro
+                    </button>
+                  </div>
+                </div>
+  
+                <div class="table-responsive">
+                  <table class="table table-hover align-middle">
+                    <thead class="table-light">
+                      <tr>
+                        <th scope="col">ID</th>
+                        <th scope="col">Cliente</th>
+                        <th scope="col">Evento</th>
+                        <th scope="col">Ingresso</th>
+                        <th scope="col">Quantidade</th>
+                        <th scope="col">Valor Total</th>
+                        <th scope="col">Status</th>
+                        <th scope="col">Data</th>
+                        <th scope="col">Ações</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr v-for="pedido in filteredPedidos" :key="pedido.id">
+                        <td>{{ pedido.id }}</td>
+                        <td>
+                          <div>
+                            <div class="fw-bold">{{ pedido.usuario?.nome || 'N/A' }}</div>
+                            <small class="text-muted">{{ pedido.usuario?.email || '' }}</small>
+                          </div>
+                        </td>
+                        <td>{{ pedido.evento?.nomeevento || 'N/A' }}</td>
+                        <td>
+                          <span class="badge bg-primary">
+                            {{ pedido.ingresso?.tipoingresso || 'N/A' }}
+                          </span>
+                        </td>
+                        <td>{{ pedido.quantidade }}</td>
+                        <td>R$ {{ parseFloat(pedido.valorTotal || 0).toFixed(2).replace('.', ',') }}</td>
+                        <td>
+                          <span class="badge" :class="getStatusPedidoBadgeClass(pedido.statusPagamento)">
+                            {{ getStatusPedidoLabel(pedido.statusPagamento) }}
+                          </span>
+                        </td>
+                        <td>{{ formatDate(pedido.createdAt) }}</td>
+                        <td>
+                          <div class="btn-group">
+                            <button 
+                              class="btn btn-sm btn-outline-success" 
+                              v-if="pedido.statusPagamento === 'aguarde'"
+                              @click="atualizarStatusPedido(pedido, 'confirmado')"
+                              title="Confirmar Pagamento"
+                            >
+                              <i class="bi bi-check-circle"></i>
+                            </button>
+                            <button 
+                              class="btn btn-sm btn-outline-danger" 
+                              v-if="pedido.statusPagamento === 'aguarde'"
+                              @click="atualizarStatusPedido(pedido, 'cancelado')"
+                              title="Cancelar Pedido"
+                            >
+                              <i class="bi bi-x-circle"></i>
+                            </button>
+                            <button 
+                              class="btn btn-sm btn-outline-info" 
+                              @click="viewPedidoDetails(pedido)"
+                              title="Ver Detalhes"
+                            >
+                              <i class="bi bi-eye"></i>
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                      <tr v-if="filteredPedidos.length === 0">
+                        <td colspan="9" class="text-center py-4">
+                          <div class="text-muted">
+                            <i class="bi bi-cart-x fs-4 d-block mb-2"></i>
+                            Nenhum pedido encontrado.
+                          </div>
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
   
           <!-- Reports -->
           <div v-if="activeMenuItem === 'reports'">
@@ -903,7 +1009,7 @@
   </template>
   
 <script>
-  import { criarEvento, atualizarEvento, deletarEvento, getEventosPorOrganizador, getIngressosPorEvento, getUsuarioById, criarIngresso, atualizarIngresso, deletarIngresso } from '@/services/api';
+  import { criarEvento, atualizarEvento, deletarEvento, getEventosPorOrganizador, getIngressosPorEvento, getUsuarioById, criarIngresso, atualizarIngresso, deletarIngresso, listarPedidos, atualizarStatusPedido } from '@/services/api';
   import { jwtDecode } from 'jwt-decode';
   import Swal from 'sweetalert2';
 
@@ -940,6 +1046,7 @@
           { id: 'dashboard', name: 'Dashboard', icon: 'bi-speedometer2' },
           { id: 'events', name: 'Eventos', icon: 'bi-calendar-event' },
           { id: 'ingressos', name: 'Ingressos', icon: 'bi-ticket-perforated' },
+          { id: 'pedidos', name: 'Pedidos', icon: 'bi-cart-check' },
           { id: 'reports', name: 'Relatórios', icon: 'bi-bar-chart' },
           { id: 'settings', name: 'Configurações', icon: 'bi-gear' }
         ],
@@ -960,7 +1067,11 @@
           quantidadeDisponivel: ''
         },
         ingressoToDelete: null,
-        showDeleteIngressoModal: false
+        showDeleteIngressoModal: false,
+        // Pedidos
+        pedidos: [],
+        filterStatusPedido: '',
+        pedidoToUpdate: null
       };
     },
     computed: {
@@ -982,12 +1093,19 @@
       },
       totalEventos() {
         return this.events.length || 0;
+      },
+      filteredPedidos() {
+        if (!this.filterStatusPedido) {
+          return this.pedidos;
+        }
+        return this.pedidos.filter(p => p.statusPagamento === this.filterStatusPedido);
       }
     },
     created() {
       this.getOrganizadorId();
       this.fetchUserData();
       this.fetchEvents();
+      this.fetchPedidos();
     },
     methods: {
       getOrganizadorId() {
@@ -1672,6 +1790,117 @@
       });
     }
   },
+  // Métodos de Pedidos
+  async fetchPedidos() {
+    try {
+      if (!this.organizadorId) {
+        console.error('Organizador ID não disponível');
+        this.pedidos = [];
+        return;
+      }
+      
+      const filtros = {
+        OrganizadorId: this.organizadorId
+      };
+      
+      if (this.filterStatusPedido) {
+        filtros.statusPagamento = this.filterStatusPedido;
+      }
+      
+      const pedidos = await listarPedidos(filtros);
+      this.pedidos = pedidos;
+    } catch (error) {
+      console.error('Erro ao buscar pedidos:', error);
+      this.pedidos = [];
+    }
+  },
+  resetFilterPedidos() {
+    this.filterStatusPedido = '';
+    this.fetchPedidos();
+  },
+  getStatusPedidoLabel(status) {
+    const labels = {
+      'aguarde': 'Aguardando',
+      'confirmado': 'Confirmado',
+      'cancelado': 'Cancelado'
+    };
+    return labels[status] || status;
+  },
+  getStatusPedidoBadgeClass(status) {
+    switch (status) {
+      case 'confirmado':
+        return 'bg-success';
+      case 'aguarde':
+        return 'bg-warning';
+      case 'cancelado':
+        return 'bg-danger';
+      default:
+        return 'bg-secondary';
+    }
+  },
+  async atualizarStatusPedido(pedido, novoStatus) {
+    try {
+      const confirmText = novoStatus === 'confirmado' 
+        ? 'Tem certeza que deseja confirmar este pagamento?'
+        : 'Tem certeza que deseja cancelar este pedido?';
+      
+      const result = await Swal.fire({
+        icon: 'question',
+        title: 'Confirmar ação',
+        text: confirmText,
+        showCancelButton: true,
+        confirmButtonColor: novoStatus === 'confirmado' ? '#28a745' : '#dc3545',
+        cancelButtonColor: '#6c757d',
+        confirmButtonText: 'Sim',
+        cancelButtonText: 'Não'
+      });
+
+      if (!result.isConfirmed) return;
+
+      await atualizarStatusPedido(pedido.id, { statusPagamento: novoStatus });
+      
+      await Swal.fire({
+        icon: 'success',
+        title: 'Sucesso!',
+        text: `Status do pedido atualizado para ${this.getStatusPedidoLabel(novoStatus)}`,
+        timer: 2000,
+        showConfirmButton: false
+      });
+
+      await this.fetchPedidos();
+    } catch (error) {
+      console.error('Erro ao atualizar status do pedido:', error);
+      Swal.fire({
+        icon: 'error',
+        title: 'Erro',
+        text: 'Não foi possível atualizar o status do pedido.',
+        confirmButtonColor: '#dc3545'
+      });
+    }
+  },
+  viewPedidoDetails(pedido) {
+    const details = `
+      <div class="text-start">
+        <p><strong>ID:</strong> ${pedido.id}</p>
+        <p><strong>Cliente:</strong> ${pedido.usuario?.nome || 'N/A'} (${pedido.usuario?.email || 'N/A'})</p>
+        <p><strong>Evento:</strong> ${pedido.evento?.nomeevento || 'N/A'}</p>
+        <p><strong>Ingresso:</strong> ${pedido.ingresso?.tipoingresso || 'N/A'}</p>
+        <p><strong>Quantidade:</strong> ${pedido.quantidade}</p>
+        <p><strong>Valor Total:</strong> R$ ${parseFloat(pedido.valorTotal || 0).toFixed(2).replace('.', ',')}</p>
+        <p><strong>Status:</strong> ${this.getStatusPedidoLabel(pedido.statusPagamento)}</p>
+        <p><strong>Preference ID:</strong> ${pedido.preferenceId || 'N/A'}</p>
+        <p><strong>Payment ID:</strong> ${pedido.paymentId || 'N/A'}</p>
+        <p><strong>Data:</strong> ${this.formatDate(pedido.createdAt)}</p>
+      </div>
+    `;
+    
+    Swal.fire({
+      icon: 'info',
+      title: 'Detalhes do Pedido',
+      html: details,
+      confirmButtonColor: '#7749F8'
+    });
+  }
 }
   };
   </script>

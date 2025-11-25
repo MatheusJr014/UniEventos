@@ -71,8 +71,13 @@
           </div>
         </div>
 
-        <button class="btn btn-primary w-100 mb-3" :disabled="subtotal <= 0">
-          Comprar Ingressos
+        <button 
+          class="btn btn-primary w-100 mb-3" 
+          :disabled="subtotal <= 0 || isProcessing"
+          @click="irParaCheckout"
+        >
+          <span v-if="isProcessing" class="spinner-border spinner-border-sm me-2" role="status"></span>
+          {{ isProcessing ? 'Processando...' : 'Comprar Ingressos' }}
         </button>
 
         <div class="d-flex align-items-center justify-content-center text-muted small">
@@ -100,7 +105,8 @@ export default {
       tickets: [],
       subtotal: 0,
       serviceFee: 0,
-      total: 0
+      total: 0,
+      isProcessing: false
     };
   },
   async created() {
@@ -145,6 +151,34 @@ export default {
       
       this.serviceFee = this.subtotal * 0.1; // 10% de taxa
       this.total = this.subtotal + this.serviceFee;
+    },
+    irParaCheckout() {
+      // Filtrar apenas ingressos com quantidade > 0
+      const itensSelecionados = this.tickets
+        .filter(ticket => ticket.quantidade > 0)
+        .map(ticket => ({
+          ingressoId: ticket.id,
+          quantidade: ticket.quantidade
+        }));
+
+      if (itensSelecionados.length === 0) {
+        return;
+      }
+
+      // Salvar dados no localStorage para usar no checkout
+      const checkoutData = {
+        eventId: this.eventId,
+        itens: itensSelecionados,
+        subtotal: this.subtotal,
+        serviceFee: this.serviceFee,
+        total: this.total,
+        tickets: this.tickets.filter(t => t.quantidade > 0)
+      };
+
+      localStorage.setItem('checkoutData', JSON.stringify(checkoutData));
+      
+      // Redirecionar para checkout
+      this.$router.push('/checkout');
     }
   }
 };

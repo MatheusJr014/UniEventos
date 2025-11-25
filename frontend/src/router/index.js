@@ -10,6 +10,10 @@ import ContatoView from "@/views/Publico/ContatoView.vue";
 import SobreView from "@/views/Publico/SobreView.vue";
 import ParaOrganizadoresView from "@/views/Publico/ParaOrganizadoresView.vue";
 import CategoriasView from "@/views/Publico/CategoriasView.vue";
+import CheckoutView from "@/views/Publico/CheckoutView.vue";
+import CheckoutSuccessView from "@/views/Publico/CheckoutSuccessView.vue";
+import CheckoutFailureView from "@/views/Publico/CheckoutFailureView.vue";
+import CheckoutPendingView from "@/views/Publico/CheckoutPendingView.vue";
 import MaintenancePage from "@/components/Publico/common/404ErrorDev.vue";
 import Teste from "@/components/teste.vue";
 
@@ -167,6 +171,26 @@ const router = createRouter({
         //   component: () => import('../components/admin/AdminComponent.vue')
         // }
       ]
+    },
+    {
+      path: '/checkout',
+      name: 'checkout',
+      component: CheckoutView
+    },
+    {
+      path: '/checkout/success',
+      name: 'checkout-success',
+      component: CheckoutSuccessView
+    },
+    {
+      path: '/checkout/failure',
+      name: 'checkout-failure',
+      component: CheckoutFailureView
+    },
+    {
+      path: '/checkout/pending',
+      name: 'checkout-pending',
+      component: CheckoutPendingView
     }
   ],
 });

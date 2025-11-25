@@ -21,4 +21,5 @@ app.use('/ingressos', require('./routes/ingressos'));
 app.use('/compras', require('./routes/compras')); 
 app.use('/avaliacoes', require('./routes/avaliacoes')); 
 app.use('/login', require('./routes/login'));
+app.use('/checkout', require('./routes/checkout'));
 module.exports = app;

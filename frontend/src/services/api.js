@@ -164,4 +164,46 @@ export const getEventoDetalhadoById = async (id) => {
   return data;
 };
 
+// Funções de Checkout
+export const criarCheckout = async (dadosCheckout) => {
+  const token = localStorage.getItem('token');
+  const { data } = await api.post('/checkout', dadosCheckout, {
+    headers: {
+      Authorization: `Bearer ${token}`
+    }
+  });
+  return data;
+};
+
+export const listarPedidos = async (filtros = {}) => {
+  const token = localStorage.getItem('token');
+  const queryParams = new URLSearchParams(filtros).toString();
+  const { data } = await api.get(`/checkout/pedidos${queryParams ? `?${queryParams}` : ''}`, {
+    headers: {
+      Authorization: `Bearer ${token}`
+    }
+  });
+  return data;
+};
+
+export const getPedidoById = async (id) => {
+  const token = localStorage.getItem('token');
+  const { data } = await api.get(`/checkout/pedidos/${id}`, {
+    headers: {
+      Authorization: `Bearer ${token}`
+    }
+  });
+  return data;
+};
+
+export const atualizarStatusPedido = async (id, statusData) => {
+  const token = localStorage.getItem('token');
+  const { data } = await api.patch(`/checkout/pedidos/${id}/status`, statusData, {
+    headers: {
+      Authorization: `Bearer ${token}`
+    }
+  });
+  return data;
+};
+
 export default api;
