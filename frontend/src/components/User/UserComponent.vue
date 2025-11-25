@@ -38,7 +38,7 @@
                                         </div>
                                         <div>
                                             <div class="small text-white-50">Membro desde</div>
-                                            <div>{{ userData.createdAt }}</div>
+                                            <div>{{ formatDate(userData.createdAt) }}</div>
                                         </div>
                                     </div>
                                 </div>
@@ -226,6 +226,197 @@
                                     </form>
                                 </div>
                             </div>
+                            
+                            <!-- Histórico de Eventos -->
+                            <div v-if="activeTab === 'history'" class="card border-0 shadow-sm mb-4">
+                                <div class="card-header bg-white">
+                                    <h5 class="card-title mb-0">Histórico de Eventos</h5>
+                                </div>
+                                <div class="card-body">
+                                    <div v-if="loadingHistorico" class="text-center py-5">
+                                        <div class="spinner-border text-primary" role="status">
+                                            <span class="visually-hidden">Carregando...</span>
+                                        </div>
+                                        <p class="mt-3 text-muted">Carregando histórico de eventos...</p>
+                                    </div>
+                                    <div v-else-if="historicoEventos.length === 0" class="text-center py-5">
+                                        <i class="bi bi-calendar-x text-muted" style="font-size: 3rem;"></i>
+                                        <p class="mt-3 text-muted">Você ainda não participou de nenhum evento.</p>
+                                        <router-link to="/eventos/lista" class="btn btn-primary mt-3">
+                                            <i class="bi bi-search me-2"></i>Explorar Eventos
+                                        </router-link>
+                                    </div>
+                                    <div v-else class="row g-4">
+                                        <div v-for="item in historicoEventos" :key="item.pedidoId" class="col-md-6 col-lg-4">
+                                            <div class="card border-0 shadow-sm h-100 hover-card">
+                                                <div class="position-relative">
+                                                    <img 
+                                                        :src="item.evento?.imagemevento || 'https://placehold.co/400x250'" 
+                                                        :alt="item.evento?.nomeevento || 'Evento'"
+                                                        class="card-img-top"
+                                                        style="height: 200px; object-fit: cover;"
+                                                    >
+                                                    <span class="badge bg-success position-absolute top-0 end-0 m-2">
+                                                        Confirmado
+                                                    </span>
+                                                </div>
+                                                <div class="card-body d-flex flex-column">
+                                                    <h6 class="card-title fw-bold">{{ item.evento?.nomeevento || 'Evento' }}</h6>
+                                                    <p class="card-text text-muted small flex-grow-1">
+                                                        {{ item.evento?.descricao ? (item.evento.descricao.substring(0, 100) + '...') : 'Sem descrição' }}
+                                                    </p>
+                                                    <div class="mb-3">
+                                                        <div class="d-flex align-items-center mb-2">
+                                                            <i class="bi bi-calendar-event text-primary me-2"></i>
+                                                            <small class="text-muted">
+                                                                {{ formatDate(item.evento?.datainicio) }}
+                                                            </small>
+                                                        </div>
+                                                        <div class="d-flex align-items-center mb-2">
+                                                            <i class="bi bi-geo-alt text-primary me-2"></i>
+                                                            <small class="text-muted">
+                                                                {{ item.evento?.local || 'Local não informado' }}
+                                                            </small>
+                                                        </div>
+                                                        <div class="d-flex align-items-center mb-2">
+                                                            <i class="bi bi-ticket-perforated text-primary me-2"></i>
+                                                            <small class="text-muted">
+                                                                {{ item.ingresso?.tipoingresso || 'Ingresso' }} - 
+                                                                {{ item.quantidade }}x
+                                                            </small>
+                                                        </div>
+                                                        <div class="d-flex align-items-center">
+                                                            <i class="bi bi-currency-dollar text-primary me-2"></i>
+                                                            <small class="text-muted">
+                                                                Total: {{ formatCurrency(item.valorTotal) }}
+                                                            </small>
+                                                        </div>
+                                                    </div>
+                                                    <div class="d-flex gap-2">
+                                                        <router-link 
+                                                            :to="{ name: 'evento-detalhes', params: { id: item.evento?.id } }"
+                                                            class="btn btn-sm btn-primary flex-grow-1"
+                                                        >
+                                                            <i class="bi bi-eye me-1"></i>Ver Detalhes
+                                                        </router-link>
+                                                    </div>
+                                                </div>
+                                                <div class="card-footer bg-white border-top">
+                                                    <small class="text-muted">
+                                                        <i class="bi bi-clock me-1"></i>
+                                                        Comprado em {{ formatDate(item.dataCompra) }}
+                                                    </small>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Favoritos -->
+                            <div v-if="activeTab === 'favorites'" class="card border-0 shadow-sm mb-4">
+                                <div class="card-header bg-white">
+                                    <h5 class="card-title mb-0">Eventos Favoritos</h5>
+                                </div>
+                                <div class="card-body">
+                                    <div class="text-center py-5">
+                                        <i class="bi bi-heart text-muted" style="font-size: 4rem;"></i>
+                                        <h5 class="mt-4 mb-3">Funcionalidade em Desenvolvimento</h5>
+                                        <p class="text-muted mb-4">
+                                            Em breve você poderá salvar seus eventos favoritos para acessá-los rapidamente.
+                                        </p>
+                                        <div class="d-flex flex-column flex-sm-row gap-3 justify-content-center">
+                                            <router-link to="/eventos/lista" class="btn btn-primary">
+                                                <i class="bi bi-search me-2"></i>Explorar Eventos
+                                            </router-link>
+                                            <button class="btn btn-outline-secondary" disabled>
+                                                <i class="bi bi-bell me-2"></i>Notificar quando disponível
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Preferências -->
+                            <div v-if="activeTab === 'preferences'" class="card border-0 shadow-sm mb-4">
+                                <div class="card-header bg-white">
+                                    <h5 class="card-title mb-0">Preferências</h5>
+                                </div>
+                                <div class="card-body">
+                                    <div class="text-center py-5">
+                                        <i class="bi bi-gear text-muted" style="font-size: 4rem;"></i>
+                                        <h5 class="mt-4 mb-3">Funcionalidade em Desenvolvimento</h5>
+                                        <p class="text-muted mb-4">
+                                            Em breve você poderá personalizar suas preferências de notificações, idioma e outras configurações da plataforma.
+                                        </p>
+                                        <div class="row g-3 justify-content-center">
+                                            <div class="col-md-4">
+                                                <div class="card border-0 bg-light h-100">
+                                                    <div class="card-body text-center">
+                                                        <i class="bi bi-bell text-primary fs-3 mb-2"></i>
+                                                        <h6 class="card-title">Notificações</h6>
+                                                        <p class="card-text small text-muted">Configure alertas e notificações</p>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-4">
+                                                <div class="card border-0 bg-light h-100">
+                                                    <div class="card-body text-center">
+                                                        <i class="bi bi-translate text-primary fs-3 mb-2"></i>
+                                                        <h6 class="card-title">Idioma</h6>
+                                                        <p class="card-text small text-muted">Escolha seu idioma preferido</p>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-4">
+                                                <div class="card border-0 bg-light h-100">
+                                                    <div class="card-body text-center">
+                                                        <i class="bi bi-palette text-primary fs-3 mb-2"></i>
+                                                        <h6 class="card-title">Tema</h6>
+                                                        <p class="card-text small text-muted">Personalize a aparência</p>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Segurança -->
+                            <div v-if="activeTab === 'security'" class="card border-0 shadow-sm mb-4">
+                                <div class="card-header bg-white">
+                                    <h5 class="card-title mb-0">Segurança</h5>
+                                </div>
+                                <div class="card-body">
+                                    <div class="text-center py-5">
+                                        <i class="bi bi-shield-lock text-muted" style="font-size: 4rem;"></i>
+                                        <h5 class="mt-4 mb-3">Funcionalidade em Desenvolvimento</h5>
+                                        <p class="text-muted mb-4">
+                                            Em breve você poderá gerenciar a segurança da sua conta, incluindo alteração de senha, autenticação de dois fatores e sessões ativas.
+                                        </p>
+                                        <div class="row g-3 justify-content-center">
+                                            <div class="col-md-6">
+                                                <div class="card border-0 bg-light h-100">
+                                                    <div class="card-body text-center">
+                                                        <i class="bi bi-key text-primary fs-3 mb-2"></i>
+                                                        <h6 class="card-title">Alterar Senha</h6>
+                                                        <p class="card-text small text-muted">Atualize sua senha regularmente</p>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <div class="card border-0 bg-light h-100">
+                                                    <div class="card-body text-center">
+                                                        <i class="bi bi-shield-check text-primary fs-3 mb-2"></i>
+                                                        <h6 class="card-title">Autenticação de Dois Fatores</h6>
+                                                        <p class="card-text small text-muted">Adicione uma camada extra de segurança</p>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -238,7 +429,7 @@
 </template>
 
 <script>
-import { getUsuarioById, atualizarUsuario } from '@/services/api';
+import { getUsuarioById, atualizarUsuario, getIngressosUsuario } from '@/services/api';
 import axios from 'axios';
 import { jwtDecode } from 'jwt-decode';
 import Swal from 'sweetalert2';
@@ -251,6 +442,8 @@ export default {
             editMode: false,
             userData: null,
             activeTab: 'personal',
+            historicoEventos: [],
+            loadingHistorico: false,
             tabs: [
                 { id: 'personal', nome: 'Informações Pessoais', icon: 'bi-person' },
                 // { id: 'tickets', nome: 'Meus Ingressos', icon: 'bi-ticket-perforated' },
@@ -314,6 +507,13 @@ export default {
     },
     mounted() {
         this.fetchUserData();
+    },
+    watch: {
+        activeTab(newTab) {
+            if (newTab === 'history') {
+                this.fetchHistoricoEventos();
+            }
+        }
     },
     methods: {
         async saveProfile() {
@@ -496,6 +696,79 @@ export default {
                 });
             } catch (error) {
                 return dateString;
+            }
+        },
+        formatCurrency(value) {
+            if (!value && value !== 0) return 'R$ 0,00';
+            return new Intl.NumberFormat('pt-BR', {
+                style: 'currency',
+                currency: 'BRL'
+            }).format(value);
+        },
+        async fetchHistoricoEventos() {
+            const token = localStorage.getItem('token');
+            if (!token) {
+                console.error('Token não encontrado!');
+                return;
+            }
+
+            this.loadingHistorico = true;
+            try {
+                const decodedToken = jwtDecode(token);
+                const usuarioId = decodedToken.id;
+
+                if (!usuarioId) {
+                    console.error('ID do usuário não encontrado!');
+                    return;
+                }
+
+                // Buscar ingressos do usuário (pedidos confirmados)
+                const ingressos = await getIngressosUsuario(usuarioId, token);
+                
+                // Filtrar apenas pedidos confirmados e mapear para o formato de histórico
+                this.historicoEventos = ingressos
+                    .filter(item => item.statusPagamento === 'confirmado')
+                    .map(item => ({
+                        pedidoId: item.pedidoId || item.id,
+                        evento: {
+                            id: item.Evento?.id || item.evento?.id,
+                            nomeevento: item.Evento?.nomeevento || item.evento?.nomeevento || item.eventoNome,
+                            datainicio: item.Evento?.dataEvento || item.Evento?.dataHora || item.evento?.datainicio,
+                            datafim: item.Evento?.datafim || item.evento?.datafim,
+                            local: item.Evento?.local || item.evento?.local,
+                            imagemevento: item.Evento?.imagem || item.Evento?.imagemevento || item.evento?.imagemevento,
+                            descricao: item.Evento?.descricao || item.evento?.descricao
+                        },
+                        ingresso: {
+                            tipoingresso: item.tipoIngresso || item.tipo || item.ingresso?.tipoingresso,
+                            preco: item.preco || item.ingresso?.preco
+                        },
+                        quantidade: item.quantidade || 1,
+                        valorTotal: item.valorTotal || 0,
+                        dataCompra: item.dataCompra || item.createdAt
+                    }))
+                    .sort((a, b) => {
+                        // Ordenar por data de compra (mais recente primeiro)
+                        const dateA = new Date(a.dataCompra);
+                        const dateB = new Date(b.dataCompra);
+                        return dateB - dateA;
+                    });
+
+                // Atualizar contador de eventos participados
+                if (this.userData) {
+                    this.userData.eventsAttended = this.historicoEventos.length;
+                }
+            } catch (error) {
+                console.error('Erro ao buscar histórico de eventos:', error);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Erro',
+                    text: 'Não foi possível carregar o histórico de eventos.',
+                    confirmButtonColor: '#dc3545'
+                });
+                this.historicoEventos = [];
+            } finally {
+                this.loadingHistorico = false;
             }
         }
     }
