@@ -134,14 +134,17 @@
                     <div class="d-flex justify-content-between align-items-center">
                       <div>
                         <h6 class="card-subtitle text-muted">Usuários Ativos</h6>
-                        <h2 class="card-title mb-0">5,389</h2>
+                        <h2 class="card-title mb-0">{{ formatNumber(totalUsuariosAtivos) }}</h2>
                       </div>
                       <div class="icon-box bg-primary bg-opacity-10 text-primary">
                         <i class="bi bi-people"></i>
                       </div>
                     </div>
-                    <div class="mt-3 small text-success">
-                      <i class="bi bi-arrow-up"></i> 15% desde o mês passado
+                    <div class="mt-3 small text-success" v-if="totalUsuariosAtivos > 0">
+                      <i class="bi bi-check-circle"></i> Usuários com compras confirmadas
+                    </div>
+                    <div class="mt-3 small text-muted" v-else>
+                      <i class="bi bi-info-circle"></i> Nenhum usuário ativo ainda
                     </div>
                   </div>
                 </div>
@@ -152,14 +155,17 @@
                     <div class="d-flex justify-content-between align-items-center">
                       <div>
                         <h6 class="card-subtitle text-muted">Receita Total</h6>
-                        <h2 class="card-title mb-0">R$ 98,5k</h2>
+                        <h2 class="card-title mb-0">{{ formatCurrency(totalReceita) }}</h2>
                       </div>
                       <div class="icon-box bg-secondary bg-opacity-10 text-secondary">
                         <i class="bi bi-currency-dollar"></i>
                       </div>
                     </div>
-                    <div class="mt-3 small text-success">
-                      <i class="bi bi-arrow-up"></i> 23% desde o mês passado
+                    <div class="mt-3 small text-success" v-if="totalReceita > 0">
+                      <i class="bi bi-check-circle"></i> Receita de vendas confirmadas
+                    </div>
+                    <div class="mt-3 small text-muted" v-else>
+                      <i class="bi bi-info-circle"></i> Nenhuma receita ainda
                     </div>
                   </div>
                 </div>
@@ -1108,6 +1114,37 @@
         
         return total;
       },
+      totalUsuariosAtivos() {
+        // Filtrar apenas pedidos confirmados do organizador
+        const pedidosConfirmados = this.pedidos.filter(p => p.statusPagamento === 'confirmado');
+        
+        // Extrair UsuarioId únicos dos pedidos confirmados
+        // Usar UsuarioId direto ou pedido.usuario?.id se disponível
+        const usuariosUnicos = new Set();
+        
+        pedidosConfirmados.forEach(pedido => {
+          // Tentar pegar o ID do usuário de diferentes formas possíveis
+          const usuarioId = pedido.UsuarioId || pedido.usuario?.id || pedido.usuario?.UsuarioId;
+          if (usuarioId) {
+            usuariosUnicos.add(usuarioId);
+          }
+        });
+        
+        // Retornar a quantidade de usuários únicos
+        return usuariosUnicos.size;
+      },
+      totalReceita() {
+        // Filtrar apenas pedidos confirmados do organizador
+        const pedidosConfirmados = this.pedidos.filter(p => p.statusPagamento === 'confirmado');
+        
+        // Somar o valorTotal de cada pedido confirmado
+        const total = pedidosConfirmados.reduce((soma, pedido) => {
+          const valor = parseFloat(pedido.valorTotal) || 0;
+          return soma + valor;
+        }, 0);
+        
+        return total;
+      },
       filteredPedidos() {
         if (!this.filterStatusPedido) {
           return this.pedidos;
@@ -1352,6 +1389,13 @@
   formatNumber(value) {
     if (!value && value !== 0) return '0';
     return parseInt(value).toLocaleString('pt-BR');
+  },
+  formatCurrency(value) {
+    if (!value && value !== 0) return 'R$ 0,00';
+    return new Intl.NumberFormat('pt-BR', {
+      style: 'currency',
+      currency: 'BRL'
+    }).format(value);
   },
   toggleSidebar() {
     this.sidebarCollapsed = !this.sidebarCollapsed;
