@@ -161,12 +161,12 @@
               <div class="card border-0 shadow-sm text-center">
                 <div class="card-body p-4">
                   <img
-                    src="https://placehold.co/150x150/7749f8/ffffff?text=JD"
+                    src="https://placehold.co/150x150/7749f8/ffffff?text=FA"
                     alt="João Silva"
                     class="rounded-circle mb-3"
                     style="width: 150px; height: 150px; object-fit: cover;"
                   />
-                  <h5 class="fw-bold mb-1">João Silva</h5>
+                  <h5 class="fw-bold mb-1">Felipe Araujo</h5>
                   <p class="text-muted small mb-3">CEO & Fundador</p>
                   <div class="d-flex justify-content-center gap-2">
                     <a href="#" class="text-muted"><i class="bi bi-linkedin"></i></a>
@@ -179,13 +179,13 @@
               <div class="card border-0 shadow-sm text-center">
                 <div class="card-body p-4">
                   <img
-                    src="https://placehold.co/150x150/ff9933/ffffff?text=MS"
+                    src="https://placehold.co/150x150/ff9933/ffffff?text=MJ"
                     alt="Maria Santos"
                     class="rounded-circle mb-3"
                     style="width: 150px; height: 150px; object-fit: cover;"
                   />
-                  <h5 class="fw-bold mb-1">Maria Santos</h5>
-                  <p class="text-muted small mb-3">CTO</p>
+                  <h5 class="fw-bold mb-1">Matheus Junior</h5>
+                  <p class="text-muted small mb-3">CEO & Fundador</p>
                   <div class="d-flex justify-content-center gap-2">
                     <a href="#" class="text-muted"><i class="bi bi-linkedin"></i></a>
                     <a href="#" class="text-muted"><i class="bi bi-twitter"></i></a>
@@ -197,13 +197,13 @@
               <div class="card border-0 shadow-sm text-center">
                 <div class="card-body p-4">
                   <img
-                    src="https://placehold.co/150x150/7749f8/ffffff?text=PC"
+                    src="https://placehold.co/150x150/7749f8/ffffff?text=PB"
                     alt="Pedro Costa"
                     class="rounded-circle mb-3"
                     style="width: 150px; height: 150px; object-fit: cover;"
                   />
-                  <h5 class="fw-bold mb-1">Pedro Costa</h5>
-                  <p class="text-muted small mb-3">Diretor de Marketing</p>
+                  <h5 class="fw-bold mb-1">Pedro Bonini</h5>
+                  <p class="text-muted small mb-3">CEO & Fundador</p>
                   <div class="d-flex justify-content-center gap-2">
                     <a href="#" class="text-muted"><i class="bi bi-linkedin"></i></a>
                     <a href="#" class="text-muted"><i class="bi bi-twitter"></i></a>
