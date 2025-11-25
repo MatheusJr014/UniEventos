@@ -170,15 +170,6 @@ exports.criarCheckout = async (req, res) => {
       console.warn('auto_return NÃO adicionado (localhost detectado). O Mercado Pago não aceita localhost com auto_return.');
     }
 
-    // Adicionar auto_return apenas se NÃO for localhost
-    // O Mercado Pago não aceita localhost com auto_return
-    if (!isLocalhost) {
-      preferenceData.auto_return = "approved";
-      console.log('auto_return adicionado (URL pública detectada)');
-    } else {
-      console.warn('auto_return NÃO adicionado (localhost detectado). Use uma URL pública ou ngrok para testar auto_return.');
-    }
-
     // Validar estrutura antes de enviar
     // IMPORTANTE: Com auto_return, todas as URLs devem estar definidas e válidas
     // if (!preferenceData.back_urls || 
@@ -243,14 +234,18 @@ exports.criarCheckout = async (req, res) => {
           failure: String(preferenceData.back_urls.failure),
           pending: String(preferenceData.back_urls.pending)
         },
-        auto_return: preferenceData.auto_return,
         statement_descriptor: preferenceData.statement_descriptor
       };
+
+      // Adicionar auto_return apenas se NÃO for localhost
+      if (!isLocalhost && preferenceData.auto_return) {
+        dataToSend.auto_return = preferenceData.auto_return;
+      }
       
       console.log('Enviando para Mercado Pago (com auto_return):', JSON.stringify({
         items: dataToSend.items.length,
         back_urls: dataToSend.back_urls,
-        auto_return: dataToSend.auto_return,
+        auto_return: dataToSend.auto_return || 'não adicionado (localhost)',
         payer_email: dataToSend.payer.email
       }, null, 2));
       
@@ -348,7 +343,7 @@ exports.listarPedidos = async (req, res) => {
       {
         model: Evento,
         as: 'evento',
-        attributes: ['id', 'nomeevento', 'OrganizadorId']
+        attributes: ['id', 'nomeevento', 'OrganizadorId', 'datainicio', 'datafim', 'local', 'imagemevento']
       },
       {
         model: Usuario,
@@ -384,6 +379,74 @@ exports.listarPedidos = async (req, res) => {
   } catch (error) {
     console.error('Erro ao listar pedidos:', error);
     res.status(500).json({ error: 'Erro ao listar pedidos' });
+  }
+};
+
+/**
+ * Obtém ingressos do usuário (pedidos confirmados e aguardando pagamento)
+ */
+exports.getIngressosUsuario = async (req, res) => {
+  try {
+    const usuarioId = req.user.id;
+    
+    if (!usuarioId) {
+      return res.status(401).json({ error: 'Usuário não autenticado' });
+    }
+
+    // Buscar pedidos confirmados e aguardando pagamento do usuário
+    const pedidos = await Pedido.findAll({
+      where: {
+        UsuarioId: usuarioId,
+        statusPagamento: ['confirmado', 'aguarde']
+      },
+      include: [
+        {
+          model: Ingresso,
+          as: 'ingresso',
+          attributes: ['id', 'tipoingresso', 'preco']
+        },
+        {
+          model: Evento,
+          as: 'evento',
+          attributes: ['id', 'nomeevento', 'datainicio', 'datafim', 'local', 'imagemevento', 'descricao']
+        }
+      ],
+      order: [['createdAt', 'DESC']]
+    });
+
+    // Transformar pedidos em formato de ingressos para o frontend
+    const ingressos = pedidos.map(pedido => ({
+      id: pedido.id, // ID do pedido como identificador único do ingresso
+      codigo: pedido.statusPagamento === 'confirmado' ? `ING-${pedido.id}-${pedido.IngressoId}` : null, // Código único do ingresso (apenas se confirmado)
+      pedidoId: pedido.id,
+      ingressoId: pedido.IngressoId,
+      quantidade: pedido.quantidade,
+      valorTotal: parseFloat(pedido.valorTotal),
+      status: pedido.statusPagamento === 'confirmado' ? 'active' : null, // Status do ingresso (ativo, usado, cancelado) - apenas se confirmado
+      statusPagamento: pedido.statusPagamento,
+      tipo: pedido.ingresso?.tipoingresso || 'Padrão',
+      tipoIngresso: pedido.ingresso?.tipoingresso || 'Padrão',
+      preco: parseFloat(pedido.ingresso?.preco || 0),
+      Evento: {
+        id: pedido.evento?.id,
+        titulo: pedido.evento?.nomeevento,
+        nomeevento: pedido.evento?.nomeevento,
+        dataHora: pedido.evento?.datainicio,
+        dataEvento: pedido.evento?.datainicio,
+        datafim: pedido.evento?.datafim,
+        local: pedido.evento?.local,
+        imagem: pedido.evento?.imagemevento,
+        descricao: pedido.evento?.descricao
+      },
+      eventoNome: pedido.evento?.nomeevento,
+      dataCompra: pedido.createdAt,
+      createdAt: pedido.createdAt
+    }));
+
+    res.json(ingressos);
+  } catch (error) {
+    console.error('Erro ao buscar ingressos do usuário:', error);
+    res.status(500).json({ error: 'Erro ao buscar ingressos do usuário' });
   }
 };
 
@@ -473,3 +536,37 @@ exports.atualizarStatusPedido = async (req, res) => {
   }
 };
 
+/**
+ * Deleta um pedido
+ */
+exports.deletarPedido = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const usuarioId = req.user.id;
+
+    const pedido = await Pedido.findByPk(id);
+
+    if (!pedido) {
+      return res.status(404).json({ error: 'Pedido não encontrado' });
+    }
+
+    // Verificar se o pedido pertence ao usuário
+    if (pedido.UsuarioId !== usuarioId) {
+      return res.status(403).json({ error: 'Você não tem permissão para deletar este pedido' });
+    }
+
+    // Só permitir deletar pedidos aguardando pagamento ou cancelados
+    if (pedido.statusPagamento === 'confirmado') {
+      return res.status(400).json({ 
+        error: 'Não é possível deletar um pedido com pagamento confirmado. Use o cancelamento de ingresso.' 
+      });
+    }
+
+    await pedido.destroy();
+
+    res.json({ message: 'Pedido deletado com sucesso' });
+  } catch (error) {
+    console.error('Erro ao deletar pedido:', error);
+    res.status(500).json({ error: 'Erro ao deletar pedido' });
+  }
+};

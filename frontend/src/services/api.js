@@ -46,7 +46,8 @@ export const atualizarUsuario = async (id, dadosUsuario, token) => {
 };
 
 export const getIngressosUsuario = async (usuarioId, token) => {
-  const { data } = await api.get(`/ingressos?usuarioId=${usuarioId}`, {
+  // Buscar ingressos através dos pedidos confirmados
+  const { data } = await api.get(`/checkout/ingressos-usuario`, {
     headers: {
       Authorization: `Bearer ${token}`
     }
@@ -175,8 +176,7 @@ export const criarCheckout = async (dadosCheckout) => {
   return data;
 };
 
-export const listarPedidos = async (filtros = {}) => {
-  const token = localStorage.getItem('token');
+export const listarPedidos = async (token, filtros = {}) => {
   const queryParams = new URLSearchParams(filtros).toString();
   const { data } = await api.get(`/checkout/pedidos${queryParams ? `?${queryParams}` : ''}`, {
     headers: {
@@ -196,11 +196,21 @@ export const getPedidoById = async (id) => {
   return data;
 };
 
-export const atualizarStatusPedido = async (id, statusData) => {
-  const token = localStorage.getItem('token');
+export const atualizarStatusPedido = async (id, statusData, token) => {
+  const authToken = token || localStorage.getItem('token');
   const { data } = await api.patch(`/checkout/pedidos/${id}/status`, statusData, {
     headers: {
-      Authorization: `Bearer ${token}`
+      Authorization: `Bearer ${authToken}`
+    }
+  });
+  return data;
+};
+
+export const deletarPedido = async (id, token) => {
+  const authToken = token || localStorage.getItem('token');
+  const { data } = await api.delete(`/checkout/pedidos/${id}`, {
+    headers: {
+      Authorization: `Bearer ${authToken}`
     }
   });
   return data;

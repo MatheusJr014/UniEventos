@@ -77,7 +77,12 @@
 
         <div v-else>
           <div v-if="filteredIngressos.length === 0" class="text-center py-5 text-muted">
-            <p>Você ainda não tem ingressos ou nenhum ingresso corresponde aos filtros.</p>
+            <i class="bi bi-ticket-perforated fs-1 d-block mb-3"></i>
+            <p class="mb-2">Você ainda não tem ingressos ou pedidos.</p>
+            <p class="small">Seus ingressos e pedidos aparecerão aqui.</p>
+            <router-link to="/eventos" class="btn btn-primary mt-3">
+              <i class="bi bi-calendar-event me-2"></i>Ver Eventos
+            </router-link>
           </div>
 
           <div class="row g-3">
@@ -88,16 +93,56 @@
                   <h5 class="card-title mb-1">{{ ingresso.Evento?.titulo || ingresso.eventoNome || 'Evento' }}</h5>
                   <p class="small text-muted mb-2">{{ formatDate(ingresso.Evento?.dataHora || ingresso.dataEvento) }}</p>
                   <p class="mb-1"><strong>Tipo:</strong> {{ ingresso.tipo || ingresso.tipoIngresso || 'Padrão' }}</p>
-                  <p class="mb-2"><strong>Código:</strong> <span class="text-monospace">{{ ingresso.codigo || ingresso.id }}</span></p>
+                  
+                  <!-- Valor do pedido -->
+                  <p class="mb-1">
+                    <strong>Valor:</strong> 
+                    <span class="text-success fw-bold">R$ {{ formatCurrency(ingresso.valorTotal) }}</span>
+                  </p>
+                  
+                  <!-- Quantidade -->
+                  <p class="mb-1" v-if="ingresso.quantidade > 1">
+                    <strong>Quantidade:</strong> {{ ingresso.quantidade }} ingressos
+                  </p>
+                  
+                  <!-- Código do ingresso - apenas se confirmado -->
+                  <p v-if="isConfirmado(ingresso)" class="mb-2">
+                    <strong>Código:</strong> <span class="text-monospace">{{ ingresso.codigo || ingresso.id }}</span>
+                  </p>
+
+                  <!-- Status do pagamento -->
+                  <div class="mb-2">
+                    <span class="badge" :class="getStatusPagamentoClass(ingresso.statusPagamento)">
+                      {{ getStatusPagamentoLabel(ingresso.statusPagamento) }}
+                    </span>
+                  </div>
 
                   <div class="mt-auto d-flex justify-content-between align-items-center">
-                    <div>
+                    <!-- Status do ingresso (apenas se confirmado) -->
+                    <div v-if="isConfirmado(ingresso)">
                       <span class="badge" :class="statusClass(ingresso.status)">{{ labelStatus(ingresso.status) }}</span>
                     </div>
+                    <div v-else></div>
+                    
+                    <!-- Botões de ação -->
                     <div class="btn-group">
-                      <button class="btn btn-sm btn-outline-primary" @click="openQrModal(ingresso)"><i class="bi bi-qr-code"></i> QR</button>
-                      <a :href="qrUrlFor(ingresso)" :download="`ingresso-${ingresso.id || ingresso.codigo}.png`" class="btn btn-sm btn-outline-secondary">Baixar</a>
-                      <button class="btn btn-sm btn-outline-danger" @click="requestCancel(ingresso)" v-if="canCancel(ingresso)">Cancelar</button>
+                      <!-- QR Code e Baixar - apenas se confirmado -->
+                      <template v-if="isConfirmado(ingresso)">
+                        <button class="btn btn-sm btn-outline-primary" @click="openQrModal(ingresso)">
+                          <i class="bi bi-qr-code"></i> QR
+                        </button>
+                        <a :href="qrUrlFor(ingresso)" :download="`ingresso-${ingresso.id || ingresso.codigo}.png`" class="btn btn-sm btn-outline-secondary">
+                          Baixar
+                        </a>
+                      </template>
+                      <!-- Botão de cancelar - sempre disponível se aguardando pagamento -->
+                      <button 
+                        class="btn btn-sm btn-outline-danger" 
+                        @click="requestCancel(ingresso)" 
+                        v-if="canCancel(ingresso) || ingresso.statusPagamento === 'aguarde'"
+                      >
+                        Cancelar
+                      </button>
                     </div>
                   </div>
                 </div>
@@ -108,8 +153,8 @@
       </div>
     </section>
 
-    <!-- QR Modal -->
-    <div v-if="showQr" class="qr-overlay" @click.self="closeQrModal">
+    <!-- QR Modal - apenas para ingressos confirmados -->
+    <div v-if="showQr && currentIngress && isConfirmado(currentIngress)" class="qr-overlay" @click.self="closeQrModal">
       <div class="qr-card p-4 bg-white rounded shadow-sm text-center">
         <h5 class="mb-3">Ingresso - {{ currentIngress?.Evento?.titulo || currentIngress?.id }}</h5>
         <img :src="qrUrlFor(currentIngress)" alt="QR Code" />
@@ -200,12 +245,25 @@ export default {
       }
 
       try {
+        // Buscar ingressos através dos pedidos (confirmados e aguardando pagamento)
         const data = await getIngressosUsuario(userId, token);
         this.ingressos = Array.isArray(data) ? data : (data?.ingressos || data?.rows || []);
+        
+        // Garantir que temos os dados necessários
+        this.ingressos = this.ingressos.map(ing => ({
+          ...ing,
+          statusPagamento: ing.statusPagamento || 'aguarde',
+          status: ing.status || (ing.statusPagamento === 'confirmado' ? 'active' : null)
+        }));
+        
         this.filteredIngressos = this.ingressos.slice();
       } catch (error) {
         console.error('Erro ao buscar ingressos', error);
-        Swal.fire({ icon: 'error', title: 'Erro', text: 'Não foi possível carregar seus ingressos. Tente novamente.' });
+        Swal.fire({ 
+          icon: 'error', 
+          title: 'Erro', 
+          text: 'Não foi possível carregar seus ingressos. Tente novamente.' 
+        });
       } finally {
         this.loading = false;
       }
@@ -227,7 +285,11 @@ export default {
     formatDate(val) {
       if (!val) return '';
       const d = new Date(val);
-      return d.toLocaleString();
+      return d.toLocaleString('pt-BR');
+    },
+    formatCurrency(value) {
+      if (!value && value !== 0) return '0,00';
+      return parseFloat(value).toFixed(2).replace('.', ',');
     },
     qrUrlFor(ingresso) {
       if (!ingresso) return '';
@@ -235,12 +297,34 @@ export default {
       return `https://api.qrserver.com/v1/create-qr-code/?size=240x240&data=${payload}`;
     },
     openQrModal(ingresso) {
-      this.currentIngress = ingresso;
-      this.showQr = true;
+      // Só abrir modal se o ingresso estiver confirmado
+      if (this.isConfirmado(ingresso)) {
+        this.currentIngress = ingresso;
+        this.showQr = true;
+      }
     },
     closeQrModal() {
       this.showQr = false;
       this.currentIngress = null;
+    },
+    isConfirmado(ingresso) {
+      return ingresso.statusPagamento === 'confirmado';
+    },
+    getStatusPagamentoLabel(status) {
+      const labels = {
+        'aguarde': 'Aguardando Pagamento',
+        'confirmado': 'Pagamento Confirmado',
+        'cancelado': 'Cancelado'
+      };
+      return labels[status] || status;
+    },
+    getStatusPagamentoClass(status) {
+      const classes = {
+        'aguarde': 'bg-warning text-dark',
+        'confirmado': 'bg-success text-white',
+        'cancelado': 'bg-danger text-white'
+      };
+      return classes[status] || 'bg-secondary text-white';
     },
     labelStatus(status) {
       const s = (status || 'active').toLowerCase();
@@ -257,24 +341,65 @@ export default {
       return 'bg-light';
     },
     canCancel(ingresso) {
+      // Pode cancelar se estiver ativo (confirmado) ou aguardando pagamento
+      if (ingresso.statusPagamento === 'aguarde') return true;
       const s = (ingresso.status || 'active').toLowerCase();
       return s === 'active';
     },
-    requestCancel(ingresso) {
-      Swal.fire({
-        title: 'Cancelar ingresso?',
-        text: 'Deseja realmente cancelar este ingresso? Essa ação pode ser irreversível.',
+    async requestCancel(ingresso) {
+      const isAguardando = ingresso.statusPagamento === 'aguarde';
+      const title = isAguardando ? 'Cancelar e deletar pedido?' : 'Cancelar ingresso?';
+      const text = isAguardando 
+        ? 'Deseja realmente cancelar e deletar este pedido? O pedido será removido permanentemente e o pagamento não será processado.'
+        : 'Deseja realmente cancelar este ingresso? Essa ação pode ser irreversível.';
+
+      const result = await Swal.fire({
+        title: title,
+        text: text,
         icon: 'warning',
         showCancelButton: true,
         confirmButtonText: 'Sim, cancelar',
-        cancelButtonText: 'Não'
-      }).then((result) => {
-        if (result.isConfirmed) {
-          ingresso.status = 'cancelled';
-          this.applyFilters();
-          Swal.fire('Cancelado', 'Seu ingresso foi marcado como cancelado.', 'success');
-        }
+        cancelButtonText: 'Não',
+        confirmButtonColor: '#dc3545'
       });
+
+      if (result.isConfirmed) {
+        try {
+          const token = localStorage.getItem('token');
+          
+          // Se for um pedido aguardando pagamento, deletar da tabela
+          if (isAguardando && ingresso.pedidoId) {
+            const { deletarPedido } = await import('@/services/api');
+            await deletarPedido(ingresso.pedidoId, token);
+          } else if (ingresso.pedidoId) {
+            // Se for ingresso confirmado, apenas atualizar status para cancelado
+            const { atualizarStatusPedido } = await import('@/services/api');
+            await atualizarStatusPedido(ingresso.pedidoId, { statusPagamento: 'cancelado' }, token);
+          } else {
+            // Se for ingresso confirmado sem pedidoId, apenas atualizar localmente
+            ingresso.status = 'cancelled';
+          }
+          
+          // Recarregar lista de ingressos
+          await this.fetchIngressos();
+          
+          Swal.fire({
+            icon: 'success',
+            title: 'Cancelado',
+            text: isAguardando ? 'Pedido cancelado e removido com sucesso.' : 'Ingresso cancelado com sucesso.',
+            timer: 2000,
+            showConfirmButton: false
+          });
+        } catch (error) {
+          console.error('Erro ao cancelar:', error);
+          const errorMessage = error.response?.data?.error || 'Não foi possível cancelar. Tente novamente.';
+          Swal.fire({
+            icon: 'error',
+            title: 'Erro',
+            text: errorMessage
+          });
+        }
+      }
     }
   }
 };

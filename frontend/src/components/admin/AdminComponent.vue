@@ -1807,7 +1807,8 @@
         filtros.statusPagamento = this.filterStatusPedido;
       }
       
-      const pedidos = await listarPedidos(filtros);
+      const token = localStorage.getItem('token');
+      const pedidos = await listarPedidos(token, filtros);
       this.pedidos = pedidos;
     } catch (error) {
       console.error('Erro ao buscar pedidos:', error);
@@ -1857,7 +1858,8 @@
 
       if (!result.isConfirmed) return;
 
-      await atualizarStatusPedido(pedido.id, { statusPagamento: novoStatus });
+      const token = localStorage.getItem('token');
+      await atualizarStatusPedido(pedido.id, { statusPagamento: novoStatus }, token);
       
       await Swal.fire({
         icon: 'success',

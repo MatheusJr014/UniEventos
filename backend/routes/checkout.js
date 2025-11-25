@@ -156,5 +156,47 @@ router.get('/pedidos/:id', authMiddleware, checkoutController.getPedidoById);
  */
 router.patch('/pedidos/:id/status', authMiddleware, checkoutController.atualizarStatusPedido);
 
+/**
+ * @swagger
+ * /checkout/pedidos/{id}:
+ *   delete:
+ *     summary: Deleta um pedido
+ *     tags: [Checkout]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       200:
+ *         description: Pedido deletado com sucesso
+ *       400:
+ *         description: Não é possível deletar pedido confirmado
+ *       403:
+ *         description: Sem permissão para deletar este pedido
+ *       404:
+ *         description: Pedido não encontrado
+ */
+router.delete('/pedidos/:id', authMiddleware, checkoutController.deletarPedido);
+
+/**
+ * @swagger
+ * /checkout/ingressos-usuario:
+ *   get:
+ *     summary: Obtém ingressos do usuário (pedidos confirmados)
+ *     tags: [Checkout]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Lista de ingressos do usuário
+ *       401:
+ *         description: Usuário não autenticado
+ */
+router.get('/ingressos-usuario', authMiddleware, checkoutController.getIngressosUsuario);
+
 module.exports = router;
 
