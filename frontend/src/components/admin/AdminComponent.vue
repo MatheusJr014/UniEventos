@@ -648,12 +648,19 @@
                     </div>
                   </div>
                   <div class="card-body">
-                    <div class="chart-container" style="height: 250px;">
-                      <!-- Placeholder for chart -->
-                      <div class="chart-placeholder d-flex align-items-center justify-content-center h-100 bg-light rounded">
+                    <div class="chart-container" style="height: 300px;">
+                      <apexchart
+                        v-if="chartOptionsVendasAno && chartSeriesVendasAno && chartSeriesVendasAno[0] && chartSeriesVendasAno[0].data && chartSeriesVendasAno[0].data.length > 0"
+                        type="bar"
+                        height="300"
+                        :options="chartOptionsVendasAno"
+                        :series="chartSeriesVendasAno"
+                      ></apexchart>
+                      <div v-else class="chart-placeholder d-flex align-items-center justify-content-center h-100 bg-light rounded">
                         <div class="text-center text-muted">
                           <i class="bi bi-bar-chart-line fs-1"></i>
-                          <p>Gráfico de Vendas</p>
+                          <p v-if="pedidos.length === 0">Carregando dados...</p>
+                          <p v-else>Nenhuma venda confirmada ainda</p>
                         </div>
                       </div>
                     </div>
@@ -674,12 +681,19 @@
                     </div>
                   </div>
                   <div class="card-body">
-                    <div class="chart-container" style="height: 250px;">
-                      <!-- Placeholder for chart -->
-                      <div class="chart-placeholder d-flex align-items-center justify-content-center h-100 bg-light rounded">
+                    <div class="chart-container" style="height: 300px;">
+                      <apexchart
+                        v-if="chartOptionsUsuariosInscritos && chartSeriesUsuariosInscritos && chartSeriesUsuariosInscritos[0] && chartSeriesUsuariosInscritos[0].data && chartSeriesUsuariosInscritos[0].data.length > 0"
+                        type="line"
+                        height="300"
+                        :options="chartOptionsUsuariosInscritos"
+                        :series="chartSeriesUsuariosInscritos"
+                      ></apexchart>
+                      <div v-else class="chart-placeholder d-flex align-items-center justify-content-center h-100 bg-light rounded">
                         <div class="text-center text-muted">
                           <i class="bi bi-graph-up fs-1"></i>
-                          <p>Gráfico de Usuários</p>
+                          <p v-if="pedidos.length === 0">Carregando dados...</p>
+                          <p v-else>Nenhum usuário inscrito ainda</p>
                         </div>
                       </div>
                     </div>
@@ -712,42 +726,22 @@
                           </tr>
                         </thead>
                         <tbody>
-                          <tr>
-                            <td>Janeiro</td>
-                            <td>R$ 45.320,00</td>
-                            <td>R$ 4.532,00</td>
-                            <td>R$ 40.788,00</td>
-                            <td class="text-success">+12%</td>
+                          <tr v-for="(item, index) in relatorioFinanceiro" :key="index">
+                            <td>{{ item.mes }}</td>
+                            <td>{{ formatCurrency(item.receitaBruta) }}</td>
+                            <td>{{ formatCurrency(item.taxas) }}</td>
+                            <td>{{ formatCurrency(item.receitaLiquida) }}</td>
+                            <td :class="item.crescimento >= 0 ? 'text-success' : 'text-danger'">
+                              {{ item.crescimento >= 0 ? '+' : '' }}{{ item.crescimento.toFixed(1) }}%
+                            </td>
                           </tr>
-                          <tr>
-                            <td>Fevereiro</td>
-                            <td>R$ 52.150,00</td>
-                            <td>R$ 5.215,00</td>
-                            <td>R$ 46.935,00</td>
-                            <td>  5.215,00</td>
-                            <td>R$ 46.935,00</td>
-                            <td class="text-success">+15%</td>
-                          </tr>
-                          <tr>
-                            <td>Março</td>
-                            <td>R$ 48.730,00</td>
-                            <td>R$ 4.873,00</td>
-                            <td>R$ 43.857,00</td>
-                            <td class="text-danger">-6%</td>
-                          </tr>
-                          <tr>
-                            <td>Abril</td>
-                            <td>R$ 56.420,00</td>
-                            <td>R$ 5.642,00</td>
-                            <td>R$ 50.778,00</td>
-                            <td class="text-success">+16%</td>
-                          </tr>
-                          <tr>
-                            <td>Maio</td>
-                            <td>R$ 62.180,00</td>
-                            <td>R$ 6.218,00</td>
-                            <td>R$ 55.962,00</td>
-                            <td class="text-success">+10%</td>
+                          <tr v-if="relatorioFinanceiro.length === 0">
+                            <td colspan="5" class="text-center py-4">
+                              <div class="text-muted">
+                                <i class="bi bi-calendar-x fs-4 d-block mb-2"></i>
+                                Nenhum dado financeiro disponível ainda.
+                              </div>
+                            </td>
                           </tr>
                         </tbody>
                       </table>
@@ -1521,6 +1515,355 @@
             }
           }]
         };
+      },
+      chartSeriesVendasAno() {
+        // Agrupar pedidos confirmados por ano
+        const vendasPorAno = {};
+        
+        this.pedidos
+          .filter(p => p.statusPagamento === 'confirmado')
+          .forEach(pedido => {
+            if (pedido.createdAt) {
+              const ano = new Date(pedido.createdAt).getFullYear();
+              const quantidade = parseInt(pedido.quantidade) || 0;
+              
+              if (!vendasPorAno[ano]) {
+                vendasPorAno[ano] = 0;
+              }
+              vendasPorAno[ano] += quantidade;
+            }
+          });
+        
+        // Ordenar anos e preparar dados
+        const anos = Object.keys(vendasPorAno).sort((a, b) => parseInt(a) - parseInt(b));
+        
+        return [{
+          name: 'Ingressos Vendidos',
+          data: anos.map(ano => vendasPorAno[ano])
+        }];
+      },
+      chartOptionsVendasAno() {
+        // Agrupar pedidos confirmados por ano
+        const vendasPorAno = {};
+        
+        this.pedidos
+          .filter(p => p.statusPagamento === 'confirmado')
+          .forEach(pedido => {
+            if (pedido.createdAt) {
+              const ano = new Date(pedido.createdAt).getFullYear();
+              const quantidade = parseInt(pedido.quantidade) || 0;
+              
+              if (!vendasPorAno[ano]) {
+                vendasPorAno[ano] = 0;
+              }
+              vendasPorAno[ano] += quantidade;
+            }
+          });
+        
+        // Ordenar anos
+        const anos = Object.keys(vendasPorAno).sort((a, b) => parseInt(a) - parseInt(b));
+        
+        if (anos.length === 0) {
+          return null;
+        }
+        
+        return {
+          chart: {
+            type: 'bar',
+            height: 300,
+            toolbar: {
+              show: false
+            },
+            zoom: {
+              enabled: false
+            }
+          },
+          plotOptions: {
+            bar: {
+              horizontal: false,
+              columnWidth: '55%',
+              borderRadius: 4,
+              dataLabels: {
+                position: 'top'
+              }
+            }
+          },
+          dataLabels: {
+            enabled: true,
+            formatter: function (val) {
+              return val;
+            },
+            offsetY: -20,
+            style: {
+              fontSize: '12px',
+              colors: ['#304758']
+            }
+          },
+          xaxis: {
+            categories: anos,
+            title: {
+              text: 'Ano'
+            },
+            labels: {
+              style: {
+                fontSize: '12px'
+              }
+            }
+          },
+          yaxis: {
+            title: {
+              text: 'Quantidade de Ingressos'
+            },
+            labels: {
+              formatter: function (val) {
+                return Math.floor(val);
+              }
+            }
+          },
+          fill: {
+            type: 'gradient',
+            gradient: {
+              shade: 'light',
+              type: 'vertical',
+              shadeIntensity: 0.25,
+              gradientToColors: ['#7749F8'],
+              inverseColors: true,
+              opacityFrom: 1,
+              opacityTo: 1,
+              stops: [0, 100]
+            }
+          },
+          colors: ['#7749F8'],
+          tooltip: {
+            y: {
+              formatter: function (val) {
+                return val + ' ingressos';
+              }
+            }
+          },
+          grid: {
+            borderColor: '#e7e7e7',
+            row: {
+              colors: ['#f3f3f3', 'transparent'],
+              opacity: 0.5
+            }
+          }
+        };
+      },
+      chartSeriesUsuariosInscritos() {
+        // Agrupar pedidos confirmados por mês/ano para mostrar crescimento de usuários
+        const usuariosPorMes = {};
+        
+        this.pedidos
+          .filter(p => p.statusPagamento === 'confirmado')
+          .forEach(pedido => {
+            if (pedido.createdAt) {
+              const date = new Date(pedido.createdAt);
+              const mesAno = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+              const usuarioId = pedido.UsuarioId || pedido.usuario?.id;
+              
+              if (usuarioId) {
+                if (!usuariosPorMes[mesAno]) {
+                  usuariosPorMes[mesAno] = new Set();
+                }
+                usuariosPorMes[mesAno].add(usuarioId);
+              }
+            }
+          });
+        
+        // Ordenar meses e calcular total acumulado de usuários únicos
+        const meses = Object.keys(usuariosPorMes).sort();
+        const dadosAcumulados = [];
+        const usuariosUnicosAcumulados = new Set();
+        
+        meses.forEach(mes => {
+          const usuariosDoMes = usuariosPorMes[mes];
+          usuariosDoMes.forEach(userId => usuariosUnicosAcumulados.add(userId));
+          dadosAcumulados.push(usuariosUnicosAcumulados.size);
+        });
+        
+        return [{
+          name: 'Usuários Inscritos',
+          data: dadosAcumulados
+        }];
+      },
+      chartOptionsUsuariosInscritos() {
+        // Agrupar pedidos confirmados por mês/ano
+        const usuariosPorMes = {};
+        
+        this.pedidos
+          .filter(p => p.statusPagamento === 'confirmado')
+          .forEach(pedido => {
+            if (pedido.createdAt) {
+              const date = new Date(pedido.createdAt);
+              const mesAno = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+              const usuarioId = pedido.UsuarioId || pedido.usuario?.id;
+              
+              if (usuarioId) {
+                if (!usuariosPorMes[mesAno]) {
+                  usuariosPorMes[mesAno] = new Set();
+                }
+                usuariosPorMes[mesAno].add(usuarioId);
+              }
+            }
+          });
+        
+        // Ordenar meses
+        const meses = Object.keys(usuariosPorMes).sort();
+        
+        if (meses.length === 0) {
+          return null;
+        }
+        
+        // Formatar labels de mês/ano
+        const labelsFormatados = meses.map(mes => {
+          const [ano, mesNum] = mes.split('-');
+          const mesesNomes = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'];
+          return `${mesesNomes[parseInt(mesNum) - 1]}/${ano}`;
+        });
+        
+        return {
+          chart: {
+            type: 'line',
+            height: 300,
+            toolbar: {
+              show: false
+            },
+            zoom: {
+              enabled: false
+            }
+          },
+          stroke: {
+            curve: 'smooth',
+            width: 3
+          },
+          dataLabels: {
+            enabled: true,
+            formatter: function (val) {
+              return val;
+            },
+            style: {
+              fontSize: '12px',
+              colors: ['#304758']
+            }
+          },
+          xaxis: {
+            categories: labelsFormatados,
+            title: {
+              text: 'Período'
+            },
+            labels: {
+              rotate: -45,
+              rotateAlways: true,
+              style: {
+                fontSize: '11px'
+              }
+            }
+          },
+          yaxis: {
+            title: {
+              text: 'Total de Usuários'
+            },
+            labels: {
+              formatter: function (val) {
+                return Math.floor(val);
+              }
+            }
+          },
+          colors: ['#FF9933'],
+          fill: {
+            type: 'gradient',
+            gradient: {
+              shade: 'light',
+              type: 'vertical',
+              shadeIntensity: 0.5,
+              gradientToColors: ['#FF9933'],
+              inverseColors: false,
+              opacityFrom: 0.7,
+              opacityTo: 0.3,
+              stops: [0, 100]
+            }
+          },
+          markers: {
+            size: 5,
+            colors: ['#FF9933'],
+            strokeColors: '#fff',
+            strokeWidth: 2,
+            hover: {
+              size: 7
+            }
+          },
+          tooltip: {
+            y: {
+              formatter: function (val) {
+                return val + ' usuários';
+              }
+            }
+          },
+          grid: {
+            borderColor: '#e7e7e7',
+            row: {
+              colors: ['#f3f3f3', 'transparent'],
+              opacity: 0.5
+            }
+          }
+        };
+      },
+      relatorioFinanceiro() {
+        // Agrupar pedidos confirmados por mês/ano
+        const dadosPorMes = {};
+        const taxaPercentual = 5; // Taxa de 5% sobre a receita bruta
+        
+        this.pedidos
+          .filter(p => p.statusPagamento === 'confirmado')
+          .forEach(pedido => {
+            if (pedido.createdAt && pedido.valorTotal) {
+              const date = new Date(pedido.createdAt);
+              const mesAno = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+              const valorTotal = parseFloat(pedido.valorTotal) || 0;
+              
+              if (!dadosPorMes[mesAno]) {
+                dadosPorMes[mesAno] = {
+                  mesAno: mesAno,
+                  receitaBruta: 0
+                };
+              }
+              dadosPorMes[mesAno].receitaBruta += valorTotal;
+            }
+          });
+        
+        // Ordenar meses e calcular taxas, receita líquida e crescimento
+        const meses = Object.keys(dadosPorMes).sort();
+        const relatorio = [];
+        const mesesNomes = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 
+                           'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
+        
+        meses.forEach((mesAno, index) => {
+          const [ano, mesNum] = mesAno.split('-');
+          const mesNome = mesesNomes[parseInt(mesNum) - 1];
+          const receitaBruta = dadosPorMes[mesAno].receitaBruta;
+          const taxas = receitaBruta * (taxaPercentual / 100);
+          const receitaLiquida = receitaBruta - taxas;
+          
+          // Calcular crescimento comparando com o mês anterior
+          let crescimento = 0;
+          if (index > 0) {
+            const receitaBrutaAnterior = dadosPorMes[meses[index - 1]].receitaBruta;
+            if (receitaBrutaAnterior > 0) {
+              crescimento = ((receitaBruta - receitaBrutaAnterior) / receitaBrutaAnterior) * 100;
+            }
+          }
+          
+          relatorio.push({
+            mes: `${mesNome}/${ano}`,
+            receitaBruta: receitaBruta,
+            taxas: taxas,
+            receitaLiquida: receitaLiquida,
+            crescimento: crescimento
+          });
+        });
+        
+        return relatorio;
       }
     },
     created() {
