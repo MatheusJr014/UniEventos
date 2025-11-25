@@ -210,11 +210,18 @@
                   </div>
                   <div class="card-body">
                     <div class="chart-container" style="height: 300px;">
-                      <!-- Placeholder for chart -->
-                      <div class="chart-placeholder d-flex align-items-center justify-content-center h-100 bg-light rounded">
+                      <apexchart
+                        v-if="chartOptionsCategorias && chartSeriesCategorias && chartSeriesCategorias.length > 0"
+                        type="pie"
+                        height="300"
+                        :options="chartOptionsCategorias"
+                        :series="chartSeriesCategorias"
+                      ></apexchart>
+                      <div v-else class="chart-placeholder d-flex align-items-center justify-content-center h-100 bg-light rounded">
                         <div class="text-center text-muted">
                           <i class="bi bi-pie-chart fs-1"></i>
-                          <p>Gráfico de Categorias</p>
+                          <p v-if="allEvents.length === 0">Carregando dados...</p>
+                          <p v-else>Nenhum evento no sistema ainda</p>
                         </div>
                       </div>
                     </div>
@@ -1025,7 +1032,7 @@
   </template>
   
 <script>
-  import { criarEvento, atualizarEvento, deletarEvento, getEventosPorOrganizador, getIngressosPorEvento, getUsuarioById, criarIngresso, atualizarIngresso, deletarIngresso, listarPedidos, atualizarStatusPedido } from '@/services/api';
+  import { criarEvento, atualizarEvento, deletarEvento, getEventosPorOrganizador, getEventos, getIngressosPorEvento, getUsuarioById, criarIngresso, atualizarIngresso, deletarIngresso, listarPedidos, atualizarStatusPedido } from '@/services/api';
   import { jwtDecode } from 'jwt-decode';
   import Swal from 'sweetalert2';
   import VueApexCharts from 'vue3-apexcharts';
@@ -1071,6 +1078,7 @@
           { id: 'settings', name: 'Configurações', icon: 'bi-gear' }
         ],
         events: [],
+        allEvents: [], // Todos os eventos do sistema (para gráfico de categorias)
         organizadorId: null,
         userName: 'Organizador',
         userImage: null, // Será definido no fetchUserData
@@ -1309,12 +1317,160 @@
             }
           }
         };
+      },
+      chartSeriesCategorias() {
+        // Agrupar TODOS os eventos do sistema por categoria e contar quantos eventos existem em cada categoria
+        const eventosPorCategoria = {};
+        
+        this.allEvents.forEach(evento => {
+          const categoria = evento.categoria || 'Sem categoria';
+          if (!eventosPorCategoria[categoria]) {
+            eventosPorCategoria[categoria] = 0;
+          }
+          eventosPorCategoria[categoria]++;
+        });
+        
+        // Converter para array e ordenar por quantidade (maior para menor)
+        const dados = Object.entries(eventosPorCategoria)
+          .map(([categoria, quantidade]) => ({ categoria, quantidade }))
+          .sort((a, b) => b.quantidade - a.quantidade);
+        
+        return dados.length > 0 ? dados.map(item => item.quantidade) : [];
+      },
+      chartOptionsCategorias() {
+        // Agrupar TODOS os eventos do sistema por categoria e contar quantos eventos existem em cada categoria
+        const eventosPorCategoria = {};
+        
+        this.allEvents.forEach(evento => {
+          const categoria = evento.categoria || 'Sem categoria';
+          if (!eventosPorCategoria[categoria]) {
+            eventosPorCategoria[categoria] = 0;
+          }
+          eventosPorCategoria[categoria]++;
+        });
+        
+        // Converter para array e ordenar por quantidade (maior para menor)
+        const dados = Object.entries(eventosPorCategoria)
+          .map(([categoria, quantidade]) => ({ categoria, quantidade }))
+          .sort((a, b) => b.quantidade - a.quantidade);
+        
+        // Se não houver dados, retornar null para não renderizar o gráfico
+        if (dados.length === 0) {
+          return null;
+        }
+        
+        // Cores do tema (usando variações da cor primária)
+        const cores = [
+          '#7749F8', // Roxo primário
+          '#FF9933', // Laranja secundário
+          '#9B6DFF', // Roxo claro
+          '#FFB366', // Laranja claro
+          '#B894FF', // Roxo mais claro
+          '#FFCC99', // Laranja mais claro
+          '#D4B5FF', // Roxo muito claro
+          '#FFE0B3'  // Laranja muito claro
+        ];
+        
+        return {
+          chart: {
+            type: 'pie',
+            height: 300,
+            toolbar: {
+              show: false
+            }
+          },
+          labels: dados.map(item => item.categoria),
+          colors: cores.slice(0, dados.length),
+          dataLabels: {
+            enabled: true,
+            formatter: function (val, opts) {
+              return opts.w.config.series[opts.seriesIndex] + ' (' + val.toFixed(1) + '%)';
+            },
+            style: {
+              fontSize: '12px',
+              fontWeight: 600,
+              colors: ['#fff']
+            },
+            dropShadow: {
+              enabled: true,
+              color: '#000',
+              blur: 3,
+              opacity: 0.35
+            }
+          },
+          legend: {
+            show: true,
+            position: 'bottom',
+            horizontalAlign: 'center',
+            fontSize: '12px',
+            fontFamily: 'Helvetica, Arial',
+            fontWeight: 400,
+            formatter: function (seriesName, opts) {
+              return seriesName + ': ' + opts.w.globals.series[opts.seriesIndex] + ' eventos';
+            },
+            itemMargin: {
+              horizontal: 5,
+              vertical: 5
+            },
+            markers: {
+              width: 12,
+              height: 12,
+              radius: 6,
+              strokeWidth: 0,
+              strokeColor: undefined,
+              fillColors: undefined,
+              offsetX: 0,
+              offsetY: 0,
+              shape: 'circle'
+            }
+          },
+          plotOptions: {
+            pie: {
+              donut: {
+                size: '0%'
+              },
+              expandOnClick: true,
+              dataLabels: {
+                offset: 0
+              }
+            }
+          },
+          tooltip: {
+            y: {
+              formatter: function (val, opts) {
+                const total = opts.w.globals.seriesTotals.reduce((a, b) => a + b, 0);
+                const percent = ((val / total) * 100).toFixed(1);
+                return val + ' eventos (' + percent + '%)';
+              }
+            }
+          },
+          plotOptions: {
+            pie: {
+              donut: {
+                size: '0%'
+              },
+              expandOnClick: true
+            }
+          },
+          responsive: [{
+            breakpoint: 480,
+            options: {
+              chart: {
+                width: 200
+              },
+              legend: {
+                position: 'bottom'
+              }
+            }
+          }]
+        };
       }
     },
     created() {
       this.getOrganizadorId();
       this.fetchUserData();
       this.fetchEvents();
+      this.fetchAllEvents(); // Buscar todos os eventos para o gráfico de categorias
       this.fetchPedidos();
     },
     methods: {
@@ -1382,7 +1538,16 @@
         localStorage.removeItem("token");
         this.$router.push("/auth/login");
       },
-
+      async fetchAllEvents() {
+        // Buscar TODOS os eventos do sistema para o gráfico de categorias
+        try {
+          const todosEventos = await getEventos();
+          this.allEvents = todosEventos || [];
+        } catch (error) {
+          console.error('Erro ao buscar todos os eventos:', error);
+          this.allEvents = [];
+        }
+      },
       async fetchEvents() {
         if (!this.organizadorId) {
           console.error('Organizador ID não disponível');
@@ -2437,5 +2602,34 @@
     .sidebar-collapsed {
       width: var(--sidebar-width);
     }
+  }
+
+  /* Correção para marcadores da legenda do gráfico de pizza */
+  .apexcharts-legend .apexcharts-legend-marker {
+    border-radius: 50% !important;
+    background: var(--apexcharts-marker-color) !important;
+    border: none !important;
+    box-shadow: none !important;
+    position: relative !important;
+  }
+  
+  .apexcharts-legend .apexcharts-legend-marker::before,
+  .apexcharts-legend .apexcharts-legend-marker::after {
+    display: none !important;
+    content: none !important;
+  }
+  
+  /* Remove qualquer elemento interno branco ou SVG dentro do marcador */
+  .apexcharts-legend .apexcharts-legend-marker svg,
+  .apexcharts-legend .apexcharts-legend-marker circle {
+    display: none !important;
+  }
+  
+  /* Força o marcador a ser um círculo sólido */
+  .apexcharts-legend .apexcharts-legend-marker {
+    width: 12px !important;
+    height: 12px !important;
+    min-width: 12px !important;
+    min-height: 12px !important;
   }
   </style>
