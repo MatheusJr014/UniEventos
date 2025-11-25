@@ -113,14 +113,17 @@
                     <div class="d-flex justify-content-between align-items-center">
                       <div>
                         <h6 class="card-subtitle text-muted">Ingressos Vendidos</h6>
-                        <h2 class="card-title mb-0">1,842</h2>
+                        <h2 class="card-title mb-0">{{ formatNumber(totalIngressosVendidos) }}</h2>
                       </div>
                       <div class="icon-box bg-secondary bg-opacity-10 text-secondary">
                         <i class="bi bi-ticket-perforated"></i>
                       </div>
                     </div>
-                    <div class="mt-3 small text-success">
-                      <i class="bi bi-arrow-up"></i> 8% desde o mês passado
+                    <div class="mt-3 small text-success" v-if="totalIngressosVendidos > 0">
+                      <i class="bi bi-check-circle"></i> Vendas confirmadas
+                    </div>
+                    <div class="mt-3 small text-muted" v-else>
+                      <i class="bi bi-info-circle"></i> Nenhuma venda ainda
                     </div>
                   </div>
                 </div>
@@ -1094,6 +1097,17 @@
       totalEventos() {
         return this.events.length || 0;
       },
+      totalIngressosVendidos() {
+        // Filtrar apenas pedidos confirmados do organizador
+        const pedidosConfirmados = this.pedidos.filter(p => p.statusPagamento === 'confirmado');
+        
+        // Somar a quantidade de ingressos de cada pedido confirmado
+        const total = pedidosConfirmados.reduce((soma, pedido) => {
+          return soma + (parseInt(pedido.quantidade) || 0);
+        }, 0);
+        
+        return total;
+      },
       filteredPedidos() {
         if (!this.filterStatusPedido) {
           return this.pedidos;
@@ -1334,6 +1348,10 @@
   formatDate(dateString) {
     const options = { day: '2-digit', month: '2-digit', year: 'numeric' };
     return new Date(dateString).toLocaleDateString('pt-BR', options);
+  },
+  formatNumber(value) {
+    if (!value && value !== 0) return '0';
+    return parseInt(value).toLocaleString('pt-BR');
   },
   toggleSidebar() {
     this.sidebarCollapsed = !this.sidebarCollapsed;
@@ -1799,17 +1817,15 @@
         return;
       }
       
+      // Sempre buscar TODOS os pedidos do organizador (sem filtro de status)
+      // O filtro de status será aplicado apenas no computed filteredPedidos para a tabela
       const filtros = {
         OrganizadorId: this.organizadorId
       };
       
-      if (this.filterStatusPedido) {
-        filtros.statusPagamento = this.filterStatusPedido;
-      }
-      
       const token = localStorage.getItem('token');
       const pedidos = await listarPedidos(token, filtros);
-      this.pedidos = pedidos;
+      this.pedidos = pedidos || [];
     } catch (error) {
       console.error('Erro ao buscar pedidos:', error);
       this.pedidos = [];
